@@ -153,6 +153,7 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
     current_node = Node(current_point[0], current_point[1])
     nodes_created += 1
     ast.add_to_open(current_node)
+    # best_node = current_node
     while not ast.open_is_empty():
         steps += 1
         ast.add_to_closed(current_node)
@@ -166,7 +167,7 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
             #     print("time: ", new_node.time)
             #     print("constraint: ", constraint)
             #     print("constraints: ", constraints)
-            if (ast.was_expanded(new_node) and new_node != current_node) or new_node in constraint:
+            if ast.was_expanded(new_node) or new_node in constraint:
                 pass
             else:
                 if new_node.i == goal_i and new_node.j == goal_j:
@@ -174,7 +175,14 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
                     find = True
                     return find, end, steps
                 ast.add_to_open(new_node)
-        current_node = ast.get_best_node_from_open()
+        current_node = ast.get_best_node_from_open()        
+        # new_node = ast.get_best_node_from_open()
+        # if new_node != current_node:
+        #     ast.add_to_closed(current_node)
+        # current_node = new_node
+        
+        # if current_node.f < best_node.f:
+        #     best_node = current_node
         if ast.was_expanded(current_node):
             break
         
@@ -182,6 +190,6 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
     
     
     CLOSED = ast.CLOSED
-    
-    return False, None, steps
+    return False, False, steps
+    # return False, best_node, steps
 

@@ -49,7 +49,7 @@ def draw(grid_map, start = None, goal = None, path = None, nodes_opened = None, 
         for step in path:
             if (step is not None):
                 if (grid_map.traversable(step.i, step.j)):
-                    draw.rectangle((step.j * k, step.i * k, (step.j + 1) * k - 1, (step.i + 1) * k - 1), fill=(255, 0, 0), width=0)
+                    draw.rectangle((step.j * k, step.i * k, (step.j + 1) * k - 1, (step.i + 1) * k - 1), fill=(231, 76, 60), width=0)
                 else:
                     draw.rectangle((step.j * k, step.i * k, (step.j + 1) * k - 1, (step.i + 1) * k - 1), fill=(230, 126, 34), width=0)
 
@@ -57,18 +57,18 @@ def draw(grid_map, start = None, goal = None, path = None, nodes_opened = None, 
         draw.rectangle((start.j * k, start.i * k, (start.j + 1) * k - 1, (start.i + 1) * k - 1), fill=(40, 180, 99), width=0)
     
     if (goal is not None) and (grid_map.traversable(goal.i, goal.j)):
-        draw.rectangle((goal.j * k, goal.i * k, (goal.j + 1) * k - 1, (goal.i + 1) * k - 1), fill=(231, 76, 60), width=0)
+        draw.rectangle((goal.j * k, goal.i * k, (goal.j + 1) * k - 1, (goal.i + 1) * k - 1), fill=(255, 0, 0), width=0)
 
     if pt:
         for point in points:
             if grid_map.in_bounds(start.i + point[0], start.j + point[1]):
                 i = start.i + point[0]
                 j = start.j + point[1]
-                draw.rectangle((j * k, i * k, (j + 1) * k - 1, (i + 1) * k - 1), fill=(255, 0, 0))
+                draw.rectangle((j * k, i * k, (j + 1) * k - 1, (i + 1) * k - 1), fill=(231, 76, 60))
             if grid_map.in_bounds(goal.i + point[0], goal.j + point[1]):
                 i = goal.i + point[0]
                 j = goal.j + point[1]
-                draw.rectangle((j * k, i * k, (j + 1) * k - 1, (i + 1) * k - 1), fill=(255, 0, 0))
+                draw.rectangle((j * k, i * k, (j + 1) * k - 1, (i + 1) * k - 1), fill=(231, 76, 60))
                 
     _, ax = plt.subplots(dpi=150)
     ax.axes.xaxis.set_visible(False)

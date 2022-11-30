@@ -60,6 +60,34 @@ class CBS_Node:
                         points[paths[j][i]] = [j]
             if len(points) != count_paths:
                 return points, i
+            
+        for i in range(1, max_len):
+            points = {}
+            prev_points = set()
+            for j in range(len(paths)):
+                if len(paths[j]) > i - 1:
+                    prev_points.add(paths[j][i - 1])
+            count_paths = 0
+            for j in range(len(paths)):
+                if len(paths[j]) > i:
+                    count_paths += 1
+                    current_point = paths[j][i]
+                    prev_point = paths[j][i - 1]
+                    
+                    if current_point.i < prev_point.i:
+                        current_point, prev_point = prev_point, current_point
+                    elif current_point.i == prev_point.i:
+                        if current_point.j < prev_point.j:
+                            current_point, prev_point = prev_point, current_point
+
+                    if f"{prev_point} {current_point}" in points:
+                        points[f"{prev_point} {current_point}"].append(j)
+                    else:
+                        points[f"{prev_point} {current_point}"] = [j]
+            if len(points) != count_paths:
+                print("RETURN CONFLICT ", points, i)
+                return points, i
+
         return None, 0
     
     def __hash__(self):
@@ -78,3 +106,6 @@ class CBS_Node:
         This comparator is very basic. We will code a more plausible comparator further on.
         '''
         return self._cost < other._cost
+    
+    def __repr__(self) -> str:
+        return f"{self._constraints} {self._cost}"
