@@ -49,21 +49,24 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func = None, search_tre
 
     while cbs.OPEN:
         current_node = cbs.get_best_node_from_open()
-        print("NEW OPEN NODE", current_node)
-
+        # print("NEW OPEN NODE", current_node)
+        # print("SOLUTION IN OPEN NODE")
+        # for solution in current_node.get_solutions().solutions:
+        #     print(solution.get_path())
         conflict, step = current_node.find_conflict()
+        # print("CONFLICT AND STEP", conflict, step )
         if conflict is None:
             return current_node.get_solutions()
         
         first_conflict_key = get_first_conflict_from(conflict)
-        print(conflict[first_conflict_key])
+        # print(conflict[first_conflict_key])
         # first_astar_index = conflict[first_conflict_key][0]
         # conflict_node = Node(current_node.get_solutions().solutions[first_astar_index].get_path()[step].i, current_node.get_solutions().solutions[first_astar_index].get_path()[step].j)
         for agent_index in conflict[first_conflict_key]:
             new_cbs_node = CBS_Node(current_node.get_cost(), copy.deepcopy(current_node.get_constraints()), copy.deepcopy(current_node.get_solutions()), current_node)
             conflict_node = Node(current_node.get_solutions().solutions[agent_index].get_path()[step].i, current_node.get_solutions().solutions[agent_index].get_path()[step].j)
             new_cbs_node.get_constraints().add_constraint(agent_index, step, conflict_node)
-            print("CONSTRAINTS", new_cbs_node.get_constraints())
+            # print("CONSTRAINTS", new_cbs_node.get_constraints())
             find, end, steps = astar(
                 grid_map,
                 starts_points[agent_index][0],
@@ -75,16 +78,18 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func = None, search_tre
                 heuristic_func,
                 search_tree
             )
-            print("PATH: ", make_path(end))
+            if type(end) == bool:
+                continue
+            # print("PATH: ", make_path(end))
             new_cbs_node.get_solutions().upgrade_solution(agent_index, find, end, steps)
             
             new_cbs_node.count_cost()
             if new_cbs_node.get_cost() < math.inf:
-                print("NEW CBS NODE", new_cbs_node)
+                # print("NEW CBS NODE", new_cbs_node)
                 cbs.add_to_open(new_cbs_node)
-        print("ALL OOPEN", cbs.OPEN)
+        # print("ALL OOPEN", cbs.OPEN)
         cbs.add_to_closed(current_node)
-        print("----------------------------")
+        # print("----------------------------")
                 
     return None
 

@@ -50,12 +50,14 @@ class Node:
         self.g = g
         self.h = h
         self.time = 0
+        self.f = 0
         if parent is not None:
             self.time = parent.time + 1
-        if f is None:
-            self.f = self.g + h
-        else:
-            self.f = f        
+            self.f = self.time + h
+        # if f is None:
+        #     self.f = self.g + h
+        # else:
+        #     self.f = f        
         self.parent = parent
 
         
@@ -65,14 +67,14 @@ class Node:
         Estimating where the two search nodes are the same,
         which is needed to detect dublicates in the search tree.
         '''
-        return (self.i == other.i) and (self.j == other.j)
+        return self.i == other.i and self.j == other.j and self.time == other.time
     
     def __hash__(self):
         '''
         To implement CLOSED as set of nodes we need Node to be hashable.
         '''
-        ij = self.i, self.j
-        return hash(ij)
+        ijt = self.i, self.j, self.time
+        return hash(ijt)
 
 
     def __lt__(self, other): 
@@ -87,7 +89,7 @@ class Node:
         return self.f < other.f
     
     def __repr__(self) -> str:
-        return f"{self.i} {self.j}"
+        return f"{self.i} {self.j} {self.time}"
 
 
 class SearchTreePQS: #SearchTree which uses PriorityQueue for OPEN and set for CLOSED
@@ -141,9 +143,6 @@ class SearchTreePQS: #SearchTree which uses PriorityQueue for OPEN and set for C
         return self._enc_open_dublicates
 
 def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, heuristic_func = None, search_tree = None):
-    '''
-    TODO
-    '''
     ast = search_tree()
     steps = 0
     nodes_created = 0
@@ -153,21 +152,24 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
     current_node = Node(current_point[0], current_point[1])
     nodes_created += 1
     ast.add_to_open(current_node)
-    # best_node = current_node
-    while not ast.open_is_empty():
+    open_is_empty = False
+    while not open_is_empty:
         steps += 1
+        # current_node = ast.get_best_node_from_open()
         ast.add_to_closed(current_node)
-        allowed = []
         neighbors = grid_map.get_neighbors(current_node.i, current_node.j)
+        # print("NEIGHBORS ", neighbors)
         for point in neighbors:
             nodes_created += 1
             new_node = Node(point[0], point[1],g=current_node.g + compute_cost(point[0], point[1], current_node.i, current_node.j) ,h=heuristic_func(goal_i, goal_j, point[0], point[1]),parent= current_node)
-            constraint = constraints.get_constraints(robot_index, new_node.time)
-            # if constraints != {}:
-            #     print("time: ", new_node.time)
-            #     print("constraint: ", constraint)
-            #     print("constraints: ", constraints)
-            if ast.was_expanded(new_node) or new_node in constraint:
+            in_contraints = False
+            # print("NEW NODE TIME", new_node.time)
+            for node in constraints.get_constraints(robot_index, new_node.time):
+                if node.i == new_node.i and node.j == new_node.j:
+                    in_contraints = True
+                    break
+            if ast.was_expanded(new_node) or in_contraints:
+                # print("PASS")
                 pass
             else:
                 if new_node.i == goal_i and new_node.j == goal_j:
@@ -175,20 +177,17 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
                     find = True
                     return find, end, steps
                 ast.add_to_open(new_node)
-        current_node = ast.get_best_node_from_open()        
-        # new_node = ast.get_best_node_from_open()
-        # if new_node != current_node:
-        #     ast.add_to_closed(current_node)
-        # current_node = new_node
-        
-        # if current_node.f < best_node.f:
-        #     best_node = current_node
+        # print("OPEN ", ast.OPEN)
+        if ast.open_is_empty():
+            open_is_empty = True
+        current_node = ast.get_best_node_from_open()
+        # print("get_best_node_from_open ", current_node)
         if ast.was_expanded(current_node):
+            # print("BREAK")
             break
         
     
-    
-    
+    # print(current_node)
     CLOSED = ast.CLOSED
     return False, False, steps
     # return False, best_node, steps

@@ -84,16 +84,17 @@ class Map:
         
         neighbors = []
         delta = [[0, 1], [1, 0], [0, -1], [-1, 0]]
-        neighbors_2 = []
-        delta_2 = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
+        # neighbors_2 = []
+        # delta_2 = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
         for d in delta:
             if self.in_bounds(i + d[0], j + d[1]) and self.traversable(i + d[0], j + d[1]):
                 neighbors.append((i + d[0], j + d[1]))
-        for d in delta_2:
-            if self.in_bounds(i + d[0], j + d[1]) and self.traversable(i + d[0], j + d[1]) and (i + d[0], j) in neighbors and (i, j + d[1]) in neighbors:
-                neighbors_2.append((i + d[0], j + d[1]))
+        # for d in delta_2:
+        #     if self.in_bounds(i + d[0], j + d[1]) and self.traversable(i + d[0], j + d[1]) and (i + d[0], j) in neighbors and (i, j + d[1]) in neighbors:
+        #         neighbors_2.append((i + d[0], j + d[1]))
         neighbors.append((i, j))
-        return neighbors + neighbors_2
+        # return neighbors + neighbors_2
+        return neighbors
 
     def get_size(self):
         return (self._height, self._width)

@@ -47,6 +47,7 @@ class CBS_Node:
         
     def find_conflict(self):
         paths = [solution.get_path() for solution in self._solutions.solutions]
+        # print(paths)
         max_len = max([len(path) for path in paths])
         for i in range(max_len):
             points = {}
@@ -54,10 +55,10 @@ class CBS_Node:
             for j in range(len(paths)):
                 if len(paths[j]) > i:
                     count_paths += 1
-                    if paths[j][i] in points:
-                        points[paths[j][i]].append(j)
+                    if (paths[j][i].i, paths[j][i].j) in points:
+                        points[(paths[j][i].i, paths[j][i].j)].append(j)
                     else:
-                        points[paths[j][i]] = [j]
+                        points[(paths[j][i].i, paths[j][i].j)] = [j]
             if len(points) != count_paths:
                 return points, i
             
@@ -80,12 +81,12 @@ class CBS_Node:
                         if current_point.j < prev_point.j:
                             current_point, prev_point = prev_point, current_point
 
-                    if f"{prev_point} {current_point}" in points:
-                        points[f"{prev_point} {current_point}"].append(j)
+                    if f"{(prev_point.i, prev_point.j)} {(current_point.i, current_point.j)}" in points:
+                        points[f"{(prev_point.i, prev_point.j)} {(current_point.i, current_point.j)}"].append(j)
                     else:
-                        points[f"{prev_point} {current_point}"] = [j]
+                        points[f"{(prev_point.i, prev_point.j)} {(current_point.i, current_point.j)}"] = [j]
             if len(points) != count_paths:
-                print("RETURN CONFLICT ", points, i)
+                # print("RETURN CONFLICT ", points, i)
                 return points, i
 
         return None, 0

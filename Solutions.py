@@ -19,7 +19,7 @@ def make_path(goal):
     It also returns path's length.
     '''
 
-    length = goal.g
+    length = goal.f
     current = goal
     path = []
     while current.parent:
@@ -41,6 +41,10 @@ class Solutions:
     def get_solution_of_robot(self, index):
         return self.solutions[index]
     
+    def __repr__(self) -> str:
+        for solution in self.solutions:
+            print(solution.get_path())
+    
 class Solution:
     def __init__(self, find, end, steps):
         self._find = find
@@ -58,8 +62,7 @@ class Solution:
         return self._steps
     
     def get_cost(self):
-        _, len_ = make_path(self._end)
-        return len_
+        return self._end.time
 
 
     
