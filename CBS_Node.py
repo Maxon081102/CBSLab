@@ -51,15 +51,23 @@ class CBS_Node:
         max_len = max([len(path) for path in paths])
         for i in range(max_len):
             points = {}
-            count_paths = 0
+            there_are_conflict = False
             for j in range(len(paths)):
                 if len(paths[j]) > i:
-                    count_paths += 1
                     if (paths[j][i].i, paths[j][i].j) in points:
                         points[(paths[j][i].i, paths[j][i].j)].append(j)
+                        there_are_conflict = True
                     else:
                         points[(paths[j][i].i, paths[j][i].j)] = [j]
-            if len(points) != count_paths:
+                else:
+                    if (paths[j][-1].i, paths[j][-1].j) in points:
+                        points[(paths[j][-1].i, paths[j][-1].j)].append(j)
+                        there_are_conflict = True
+                    else:
+                        points[(paths[j][-1].i, paths[j][-1].j)] = [j]
+
+                    
+            if there_are_conflict:
                 return points, i
             
         for i in range(1, max_len):

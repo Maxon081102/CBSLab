@@ -142,7 +142,7 @@ class SearchTreePQS: #SearchTree which uses PriorityQueue for OPEN and set for C
     def number_of_open_dublicates(self):
         return self._enc_open_dublicates
 
-def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, heuristic_func = None, search_tree = None):
+def astar(grid_map, start_i, start_j, goal_i, goal_j, agent_index, constraints, heuristic_func = None, search_tree = None):
     ast = search_tree()
     steps = 0
     nodes_created = 0
@@ -153,6 +153,7 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
     nodes_created += 1
     ast.add_to_open(current_node)
     open_is_empty = False
+    max_constraint_path = constraints.get_max_step(agent_index)
     while not open_is_empty:
         steps += 1
         # current_node = ast.get_best_node_from_open()
@@ -164,7 +165,7 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
             new_node = Node(point[0], point[1],g=current_node.g + compute_cost(point[0], point[1], current_node.i, current_node.j) ,h=heuristic_func(goal_i, goal_j, point[0], point[1]),parent= current_node)
             in_contraints = False
             # print("NEW NODE TIME", new_node.time)
-            for node in constraints.get_constraints(robot_index, new_node.time):
+            for node in constraints.get_constraints(agent_index, new_node.time):
                 if node.i == new_node.i and node.j == new_node.j:
                     in_contraints = True
                     break
@@ -172,7 +173,7 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
                 # print("PASS")
                 pass
             else:
-                if new_node.i == goal_i and new_node.j == goal_j:
+                if new_node.i == goal_i and new_node.j == goal_j and new_node.time > max_constraint_path:
                     end = new_node
                     find = True
                     return find, end, steps
@@ -180,6 +181,7 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, robot_index, constraints, 
         # print("OPEN ", ast.OPEN)
         if ast.open_is_empty():
             open_is_empty = True
+            continue
         current_node = ast.get_best_node_from_open()
         # print("get_best_node_from_open ", current_node)
         if ast.was_expanded(current_node):
