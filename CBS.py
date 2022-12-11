@@ -29,8 +29,8 @@ def print_debug(mode, mes, obj=None):
         print(mes, obj)
 
 
-def CBS(grid_map, starts_points, goals_points, heuristic_func = None, search_tree = None):
-    mode = False
+def CBS(grid_map, starts_points, goals_points, heuristic_func = None, search_tree = None, show_debug=False):
+    mode = show_debug
     cbs = CBS_tree()
     
     root = CBS_Node(0, Constraints(), Solutions())
