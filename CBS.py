@@ -1,6 +1,7 @@
 import math
 import heapq
 import copy
+import typing as tp
 from itertools import combinations
 
 import numpy as np
@@ -20,12 +21,12 @@ from Constraints import Constraints, Constraint_step
 from CBS_Node import CBS_Node
 from CBS_Tree import CBS_tree
 
-from path_to_success import UranaiBaba
+from path_to_success import UranaiBaba, Conflict, ConflictType
 
 
-def carefully_extract_the_conflict(points, some_vegetables):
+def carefully_extract_the_conflict(points, t, some_vegetables) -> tp.Tuple[Conflict, ConflictType]:
     beautiful_soup = []
-    for (i, j, t), pets in points.items():
+    for (i, j), pets in points.items():
         if len(pets) > 1:
             # all combinations of agents (pets) of 2
             beautiful_soup += [(*tossed, (i, j), t) for tossed in combinations(pets, 2)]
@@ -76,8 +77,8 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
         for solution in current_node.get_solutions().solutions:
             print_debug(mode, "", solution.get_path())
 
-        # conflict, step = current_node.find_conflict()
-        conflict, step = current_node.what_is_the_second_part_for()
+        conflict, step = current_node.find_conflict()
+        # conflict, step = current_node.what_is_the_second_part_for()
 
         print_debug(mode, "CONFLICT AND STEP", [conflict, step])
 
@@ -86,7 +87,12 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
 
         # granted_conflict_key = get_first_conflict_from(conflict)
 
-        granted_conflict = carefully_extract_the_conflict(conflict, current_node.get_solutions())
+        (granted_conflict, kind) = carefully_extract_the_conflict(conflict, step, current_node.get_solutions())
+        
+        # For cardinal: kind == ConflictType.cardinal
+        # For semi-cardinal: kind == ConflictType.semiCardinal
+        #   and in this case you can get the index of agent with cardinal conflict with `kind.cardinalAgent`
+        # For non-cardinal: kind == ConflictType.nonCardinal
 
         print_debug(mode, "FIRST_CONFLICT", granted_conflict)
         # first_astar_index = conflict[first_conflict_key][0]

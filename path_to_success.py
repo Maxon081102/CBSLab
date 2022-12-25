@@ -1,4 +1,5 @@
 import typing as tp
+from enum import Enum, auto
 
 from Solutions import Solutions, Solution
 from mdd import MDD
@@ -6,12 +7,20 @@ from mdd import MDD
 Vertex = tp.Tuple[int, int]
 Conflict = tp.Tuple[int, int, Vertex, int] # (a1, a2, v, t)
 
+class ConflictType(Enum):
+    cardinal = auto()
+    semiCardinal = auto()
+    nonCardinal = auto()
+
+    def __init__(self, idx) -> None:
+        self.cardinalAgent = idx
+
+
 class UranaiBaba:
     def __init__(self, miscommunications: tp.List[Conflict], mereAttempts: Solutions):
         assert miscommunications
         self._importantUranai = None
         self._notSoImportant = None
-        self._notImportantAtAll = None
         for miscommunication in miscommunications:
             (Pi, H, v, t) = miscommunication
             self._notImportantAtAll = miscommunication
@@ -30,6 +39,11 @@ class UranaiBaba:
                     self._importantUranai = miscommunication
                     return
                 else:
+                    self.notFlexible = Pi
+                    if thatOne == 1: 
+                        # meaning thisOne != 1 and thatOne == 1
+                        self.notFlexible = H
+
                     self._notSoImportant = miscommunication
 
 
@@ -48,10 +62,12 @@ class UranaiBaba:
         self = None
         exit(100)
 
-    def please_uranai(self) -> Conflict:
+    def please_uranai(self) -> tp.Tuple[Conflict, ConflictType]:
         if self._importantUranai is not None:
-            return self._importantUranai
+            return (self._importantUranai, ConflictType.cardinal)
         elif self._notSoImportant is not None:
-            return self._notSoImportant
+            res = ConflictType.semiCardinal
+            res.cardinalAgent = self.notFlexible
+            return (self._notSoImportant, res)
         else:
-            return self._notImportantAtAll
+            return (self._notImportantAtAll, ConflictType.nonCardinal)
