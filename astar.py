@@ -82,7 +82,7 @@ class Node:
         To implement CLOSED as set of nodes we need Node to be hashable.
         '''
         ijt = self.i, self.j, self.time
-        return hash(ijt)
+        return hash(ijt) + hash(self.parent)
 
     def __lt__(self, other):
         '''
@@ -150,7 +150,8 @@ def astar(
         agent_index: int,
         constraints: Constraints,
         heuristic_func: tp.Callable,
-        search_tree: tp.Type[SearchTreePQS]):
+        search_tree: tp.Type[SearchTreePQS],
+        find_all_path: bool = False):
     ast = search_tree()
     steps = 0
     found = False
@@ -159,17 +160,24 @@ def astar(
     current_node = Node(start_i, start_j)
     ast.add_to_open(current_node)
     max_constraint_path = constraints.get_max_step(agent_index)
+    shortest_path = math.inf
     while not ast.open_is_empty():
         current_node = ast.get_best_node_from_open()
+
+        if current_node.time > shortest_path:
+            break
+
         if current_node is None:
             break
 
         steps += 1
-        if current_node.i == goal_i and current_node.j == goal_j:
+        if current_node.i == goal_i and current_node.j == goal_j and not found:
             if current_node.time > max_constraint_path:
                 found = True
                 last = current_node
-                break
+                shortest_path = current_node.time
+                if not find_all_path:
+                    break
             # else: # what
                 # pass
 
@@ -185,7 +193,6 @@ def astar(
                 new_node.g = current_node.g + \
                     compute_cost(current_node.i, current_node.j, i, j)
                 new_node.h = heuristic_func(i, j, goal_i, goal_j)
-                new_node.time = current_node.time + 1
                 new_node.f = new_node.time + new_node.h
                 ast.add_to_open(new_node)
 
