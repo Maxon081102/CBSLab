@@ -12,8 +12,9 @@ class UranaiBaba:
         self._importantUranai = None
         self._notSoImportant = None
         self._notImportantAtAll = None
-        for (Pi, H, v, t) in miscommunications:
-            self._notImportantAtAll = (*v, t)
+        for miscommunication in miscommunications:
+            (Pi, H, v, t) = miscommunication
+            self._notImportantAtAll = miscommunication
 
             PiSolution = mereAttempts.get_solution_of_robot(Pi)
             HSolution = mereAttempts.get_solution_of_robot(H)
@@ -26,10 +27,10 @@ class UranaiBaba:
 
             if thisOne == 1 or thatOne == 1:
                 if thisOne == 1 and thatOne == 1:
-                    self._importantUranai = (*v, t)
+                    self._importantUranai = miscommunication
                     return
                 else:
-                    self._notSoImportant = (*v, t)
+                    self._notSoImportant = miscommunication
 
 
     def work_hard_not_smart(self, some: Solution):
@@ -40,14 +41,14 @@ class UranaiBaba:
         some._sneakyMdd = mdd
         return mdd
 
-    def fetch_uranai(self) -> Vertex:
+    def fetch_uranai(self) -> Conflict:
         print("Haha, you didn't say please") 
         self.fetch_uranai = None
         self.please_uranai = None
         self = None
         exit(100)
 
-    def please_uranai(self) -> Vertex:
+    def please_uranai(self) -> Conflict:
         if self._importantUranai is not None:
             return self._importantUranai
         elif self._notSoImportant is not None:

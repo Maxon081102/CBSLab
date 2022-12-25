@@ -86,13 +86,14 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
 
         # granted_conflict_key = get_first_conflict_from(conflict)
 
-        granted_conflict_key = carefully_extract_the_conflict(conflict, current_node.get_solutions())
+        granted_conflict = carefully_extract_the_conflict(conflict, current_node.get_solutions())
 
-        print_debug(mode, "FIRST_CONFLICT", conflict[granted_conflict_key])
+        print_debug(mode, "FIRST_CONFLICT", granted_conflict)
         # first_astar_index = conflict[first_conflict_key][0]
         # conflict_node = Node(current_node.get_solutions().solutions[first_astar_index].get_path()[step].i, current_node.get_solutions().solutions[first_astar_index].get_path()[step].j)
 
-        for agent_index in conflict[granted_conflict_key]:
+        (a1, a2, _, _) = granted_conflict
+        for agent_index in (a1, a2):
             new_cbs_node = CBS_Node(current_node.get_cost(), copy.deepcopy(
                 current_node.get_constraints()), copy.deepcopy(current_node.get_solutions()), current_node)
             conflict_node = Node(0, 0)
