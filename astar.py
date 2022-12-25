@@ -1,5 +1,4 @@
 import math
-import heapq
 
 import numpy as np
 import pandas as pd
@@ -12,24 +11,36 @@ from PIL import Image, ImageDraw
 from heapq import heappop, heappush
 
 from map import Map
-from Constraints import Constraint_step
+from Constraints import Constraint_step, Constraints
 
-def compute_cost(i1, j1, i2, j2):
+import typing as tp
+
+
+def compute_cost(i1: int, j1: int, i2: int, j2: int) -> float:
     '''
     Computes cost of simple moves between cells
     '''
-    if abs(i1 - i2) + abs(j1 - j2) == 1: #cardinal move
+    if abs(i1 - i2) + abs(j1 - j2) == 1:  # cardinal move
         return 1
     elif abs(i1 - i2) == 1 and abs(j1 - j2) == 1:
         return np.sqrt(2)
     elif i1 == i2 and j1 == j2:
         return 0
     else:
-        raise Exception('Trying to compute the cost of non-supported move! ONLY cardinal moves are supported.')
+        raise Exception(
+            'Trying to compute the cost of non-supported move! ONLY cardinal moves are supported.')
 
-def distance(i1, j1, i2, j2):
+
+def distance(i1: int, j1: int, i2: int, j2: int) -> float:
     line = max(abs(i1 - i2), abs(j1 - j2)) - min(abs(i1 - i2), abs(j1 - j2))
     return line + min(abs(i1 - i2), abs(j1 - j2)) * np.sqrt(2)
+
+
+def octile(i1: int, j1: int, i2: int, j2: int) -> float:
+    dx = abs(i2 - i1)
+    dy = abs(j2 - j1)
+    return abs(dx - dy) + np.sqrt(2) * min(dx, dy)
+
 
 class Node:
     '''
@@ -42,9 +53,8 @@ class Node:
     - parent: pointer to the parent-node 
 
     '''
-    
 
-    def __init__(self, i, j, g = 0, h = 0, f = None, parent = None, tie_breaking_func = None):
+    def __init__(self, i, j, g=0, h=0, f=None, parent=None, tie_breaking_func=None):
         self.i = i
         self.j = j
         self.g = g
@@ -57,18 +67,16 @@ class Node:
         # if f is None:
         #     self.f = self.g + h
         # else:
-        #     self.f = f        
+        #     self.f = f
         self.parent = parent
 
-        
-    
     def __eq__(self, other):
         '''
         Estimating where the two search nodes are the same,
         which is needed to detect dublicates in the search tree.
         '''
         return self.i == other.i and self.j == other.j and self.time == other.time
-    
+
     def __hash__(self):
         '''
         To implement CLOSED as set of nodes we need Node to be hashable.
@@ -76,121 +84,119 @@ class Node:
         ijt = self.i, self.j, self.time
         return hash(ijt)
 
-
-    def __lt__(self, other): 
+    def __lt__(self, other):
         '''
         Comparing the keys (i.e. the f-values) of two nodes,
         which is needed to sort/extract the best element from OPEN.
-        
+
         This comparator is very basic. We will code a more plausible comparator further on.
         '''
         if self.f == other.f:
             return self.g < other.g
         return self.f < other.f
-    
+
     def __repr__(self) -> str:
         return f"{self.i} {self.j} {self.time}"
 
 
-class SearchTreePQS: #SearchTree which uses PriorityQueue for OPEN and set for CLOSED
-    
+class SearchTreePQS:  # SearchTree which uses PriorityQueue for OPEN and set for CLOSED
+
     def __init__(self):
         self._open = []
-        heapq.heapify(self._open)
-        self._closed = {}      # list for the expanded nodes = CLOSED
-        self._enc_open_dublicates = 0
-        
+        self._closed = set()      # list for the expanded nodes = CLOSED
+
     def __len__(self):
         return len(self._open) + len(self._closed)
-                    
+
     '''
     open_is_empty should inform whether the OPEN is exhausted or not.
     In the former case the search main loop should be interrupted.
     '''
+
     def open_is_empty(self):
-        return len(self._open) == 0
-    
-    
+        return not self._open
+
     def add_to_open(self, item):
-        heapq.heappush(self._open, item)
-    
+        heappush(self._open, item)
+
     def get_best_node_from_open(self):
-        best_node = heapq.heappop(self._open)
-        while self.was_expanded(best_node) and len(self._open) > 0:
-            best_node = heapq.heappop(self._open)     
-        return best_node
-        
+        while self._open:
+            item = heappop(self._open)
+            if not self.was_expanded(item):
+                return item
+        return None
+
     def add_to_closed(self, item):
-        self._closed[item] = item
+        self._closed.add(item)
 
     def was_expanded(self, item):
-        try:
-            node = self._closed[item]
-            return True
-        except KeyError:
-            return False
+        return item in self._closed
 
     @property
     def OPEN(self):
         return self._open
-    
+
     @property
     def CLOSED(self):
         return self._closed
 
-    @property
-    def number_of_open_dublicates(self):
-        return self._enc_open_dublicates
 
-def astar(grid_map, start_i, start_j, goal_i, goal_j, agent_index, constraints, heuristic_func = None, search_tree = None):
+def astar(
+        grid_map: Map,
+        start_i: int,
+        start_j: int,
+        goal_i: int,
+        goal_j: int,
+        agent_index: int,
+        constraints: Constraints,
+        heuristic_func: tp.Callable,
+        search_tree: tp.Type[SearchTreePQS]):
     ast = search_tree()
     steps = 0
-    nodes_created = 0
-    CLOSED = None
-    
-    current_point = [start_i, start_j]
-    current_node = Node(current_point[0], current_point[1])
-    nodes_created += 1
+    found = False
+    last = None
+
+    current_node = Node(start_i, start_j)
     ast.add_to_open(current_node)
-    open_is_empty = False
     max_constraint_path = constraints.get_max_step(agent_index)
-    while not open_is_empty:
+    while not ast.open_is_empty():
+        current_node = ast.get_best_node_from_open()
+        if current_node is None:
+            break
+
         steps += 1
-        # current_node = ast.get_best_node_from_open()
-        ast.add_to_closed(current_node)
-        neighbors = grid_map.get_neighbors(current_node.i, current_node.j)
-        # print("NEIGHBORS ", neighbors)
-        for point in neighbors:
-            nodes_created += 1
-            new_node = Node(point[0], point[1],g=current_node.g + compute_cost(point[0], point[1], current_node.i, current_node.j) ,h=heuristic_func(goal_i, goal_j, point[0], point[1]),parent= current_node)
+        if current_node.i == goal_i and current_node.j == goal_j:
+            if current_node.time > max_constraint_path:
+                found = True
+                last = current_node
+                break
+            # else: # what
+                # pass
+
+        for (i, j) in grid_map.get_neighbors(current_node.i, current_node.j):
+            new_node = Node(i, j, parent=current_node)
+
             in_contraints = False
-            # print("NEW NODE TIME", new_node.time)
             for node in constraints.get_constraints(agent_index, new_node.time):
                 if node.i == new_node.i and node.j == new_node.j:
                     in_contraints = True
                     break
-            if ast.was_expanded(new_node) or in_contraints:
-                # print("PASS")
-                pass
-            else:
-                if new_node.i == goal_i and new_node.j == goal_j and new_node.time > max_constraint_path:
-                    end = new_node
-                    find = True
-                    return find, end, steps
+            if not in_contraints and not ast.was_expanded(new_node):
+                new_node.g = current_node.g + \
+                    compute_cost(current_node.i, current_node.j, i, j)
+                new_node.h = heuristic_func(i, j, goal_i, goal_j)
+                new_node.time = current_node.time + 1
+                new_node.f = new_node.time + new_node.h
                 ast.add_to_open(new_node)
-        # print("OPEN ", ast.OPEN)
-        if ast.open_is_empty():
-            open_is_empty = True
-            continue
-        current_node = ast.get_best_node_from_open()
-        # print("get_best_node_from_open ", current_node)
-        if ast.was_expanded(current_node):
-            # print("BREAK")
-            break
-        
-    
-    # print(current_node)
-    CLOSED = ast.CLOSED
-    return False, False, steps
-    # return False, best_node, steps
 
+        ast.add_to_closed(current_node)
+
+    nobodyRemembersThem = [last]
+    if found:
+        while True:
+            leftover = ast.get_best_node_from_open()
+            if last != leftover: break
+            assert last.f == leftover.f
+            nobodyRemembersThem.append(leftover)
+
+    return found, last, steps, nobodyRemembersThem

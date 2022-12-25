@@ -98,6 +98,27 @@ class CBS_Node:
                 return points, i
 
         return None, 0
+
+    def what_is_the_second_part_for(self):
+        paths = [solution.get_path() for solution in self._solutions.solutions]
+        max_len = max([len(path) for path in paths])
+        for t in range(max_len):
+            points3D = {}
+            conflicts_are_there = False
+            for i, path in enumerate(paths):
+                pos = t if t < len(path) else -1
+                key = (path[pos].i, path[pos].j, t)
+                if key in points3D:
+                    points3D[key].append(i)
+                    conflicts_are_there = True
+                else:
+                    points3D[key] = [i]
+            
+            if conflicts_are_there:
+                return points3D, t
+
+        return None, 0
+
     
     def __hash__(self):
         '''
