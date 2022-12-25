@@ -28,8 +28,9 @@ def compute_cost(i1, j1, i2, j2):
         raise Exception('Trying to compute the cost of non-supported move! ONLY cardinal moves are supported.')
 
 def distance(i1, j1, i2, j2):
-    line = max(abs(i1 - i2), abs(j1 - j2)) - min(abs(i1 - i2), abs(j1 - j2))
-    return line + min(abs(i1 - i2), abs(j1 - j2)) * np.sqrt(2)
+    # line = max(abs(i1 - i2), abs(j1 - j2)) - min(abs(i1 - i2), abs(j1 - j2))
+    # return line + min(abs(i1 - i2), abs(j1 - j2)) * np.sqrt(2)
+    return abs(i1 - i2) + abs(j1 - j2)
 
 class Node:
     '''
@@ -74,7 +75,7 @@ class Node:
         To implement CLOSED as set of nodes we need Node to be hashable.
         '''
         ijt = self.i, self.j, self.time
-        return hash(ijt)
+        return hash(ijt) + self.parent.__hash__()
 
 
     def __lt__(self, other): 
@@ -142,7 +143,7 @@ class SearchTreePQS: #SearchTree which uses PriorityQueue for OPEN and set for C
     def number_of_open_dublicates(self):
         return self._enc_open_dublicates
 
-def astar(grid_map, start_i, start_j, goal_i, goal_j, agent_index, constraints, heuristic_func = None, search_tree = None):
+def astar(grid_map, start_i, start_j, goal_i, goal_j, agent_index, constraints, heuristic_func = None, search_tree = None, all_path=False):
     ast = search_tree()
     steps = 0
     nodes_created = 0
@@ -154,7 +155,8 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, agent_index, constraints, 
     ast.add_to_open(current_node)
     open_is_empty = False
     max_constraint_path = constraints.get_max_step(agent_index)
-    while not open_is_empty:
+    goal_node_time = math.inf
+    while not open_is_empty and current_node.f < goal_node_time:
         steps += 1
         # current_node = ast.get_best_node_from_open()
         ast.add_to_closed(current_node)
@@ -174,6 +176,7 @@ def astar(grid_map, start_i, start_j, goal_i, goal_j, agent_index, constraints, 
                 pass
             else:
                 if new_node.i == goal_i and new_node.j == goal_j and new_node.time > max_constraint_path:
+                    # goal_node_time = new_node.time
                     end = new_node
                     find = True
                     return find, end, steps
