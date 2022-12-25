@@ -25,6 +25,7 @@ from path_to_success import UranaiBaba
 
 def carefully_extract_the_conflict(points, some_vegetables):
     beautiful_soup = []
+    # print(points.items())
     for (i, j, t), pets in points.items():
         if len(pets) > 1:
             # all combinations of agents (pets) of 2
@@ -77,16 +78,27 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
             print_debug(mode, "", solution.get_path())
 
         # conflict, step = current_node.find_conflict()
-        conflict, step = current_node.what_is_the_second_part_for()
+        vertex_conflicts, vertex_conflicts_step = current_node.find_vertex_conflicts()
+        edge_conflicts, edge_conflicts_step = current_node.find_edge_conflicts()
+        step = 0
+        # print_debug(mode, "CONFLICT AND STEP", [conflict, step])
 
-        print_debug(mode, "CONFLICT AND STEP", [conflict, step])
-
-        if conflict is None:
+        if vertex_conflicts is None and edge_conflicts is None:
             return current_node.get_solutions()
 
-        # granted_conflict_key = get_first_conflict_from(conflict)
-
-        granted_conflict = carefully_extract_the_conflict(conflict, current_node.get_solutions())
+        if vertex_conflicts_step >= edge_conflicts_step:
+            granted_conflict = carefully_extract_the_conflict(
+                vertex_conflicts, current_node.get_solutions())
+            step = vertex_conflicts_step
+        else: 
+            granted_conflict_key = get_first_conflict_from(edge_conflicts)
+            granted_conflict = (
+                edge_conflicts[granted_conflict_key][0],
+                edge_conflicts[granted_conflict_key][1],
+                (0, 0),
+                0
+            )
+            step = edge_conflicts_step
 
         print_debug(mode, "FIRST_CONFLICT", granted_conflict)
         # first_astar_index = conflict[first_conflict_key][0]

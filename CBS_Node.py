@@ -44,32 +44,10 @@ class CBS_Node:
     
     def get_constraints(self):
         return self._constraints
-        
-    def find_conflict(self):
-        paths = [solution.get_path() for solution in self._solutions.solutions]
-        # print(paths)
-        max_len = max([len(path) for path in paths])
-        for i in range(max_len):
-            points = {}
-            there_are_conflict = False
-            for j in range(len(paths)):
-                if len(paths[j]) > i:
-                    if (paths[j][i].i, paths[j][i].j) in points:
-                        points[(paths[j][i].i, paths[j][i].j)].append(j)
-                        there_are_conflict = True
-                    else:
-                        points[(paths[j][i].i, paths[j][i].j)] = [j]
-                else:
-                    if (paths[j][-1].i, paths[j][-1].j) in points:
-                        points[(paths[j][-1].i, paths[j][-1].j)].append(j)
-                        there_are_conflict = True
-                    else:
-                        points[(paths[j][-1].i, paths[j][-1].j)] = [j]
 
-                    
-            if there_are_conflict:
-                return points, i
-            
+    def find_edge_conflicts(self):
+        paths = [solution.get_path() for solution in self._solutions.solutions]
+        max_len = max([len(path) for path in paths])
         for i in range(1, max_len):
             points = {}
             prev_points = set()
@@ -99,7 +77,7 @@ class CBS_Node:
 
         return None, 0
 
-    def what_is_the_second_part_for(self):
+    def find_vertex_conflicts(self):
         paths = [solution.get_path() for solution in self._solutions.solutions]
         max_len = max([len(path) for path in paths])
         for t in range(max_len):
