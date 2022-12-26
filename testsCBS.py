@@ -11,7 +11,7 @@ from map import Map
 from draw import draw
 from CBS import CBS
 from Solutions import make_path
-from astar import Node, distance, SearchTreePQS
+from astar import Node, distance, SearchTreePQS, octile
 
 height = 15
 width = 30
@@ -155,7 +155,7 @@ def test_cbs_on_map(number, number_test, show_debug=False, show_all_solution=Tru
     starts_points = tests[number][number_test][0]
     goal_points = tests[number][number_test][1]
     draw(test_map)
-    sol = CBS(test_map, starts_points, goal_points, distance, SearchTreePQS, show_debug)
+    sol = CBS(test_map, starts_points, goal_points, octile, SearchTreePQS, show_debug)
     if show_all_solution:
         for i in range(len(starts_points)):
             print(sol.get_solution_of_robot(i).get_path())

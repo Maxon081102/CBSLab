@@ -1,5 +1,6 @@
 import math
 import heapq
+import typing as tp
 
 import numpy as np
 import pandas as pd
@@ -32,11 +33,11 @@ class Solutions:
     def __init__(self):
         self.solutions = []
     
-    def add_solution(self, find, end, steps):
-        self.solutions.append(Solution(find, end, steps))
+    def add_solution(self, find, end, steps, abandoned: tp.List[Node] = []):
+        self.solutions.append(Solution(find, end, steps, abandoned))
     
-    def upgrade_solution(self, index, find, end, steps):
-        self.solutions[index] = Solution(find, end, steps)
+    def upgrade_solution(self, index, find, end, steps, abandoned: tp.List[Node] = []):
+        self.solutions[index] = Solution(find, end, steps, abandoned)
     
     def get_solution_of_robot(self, index):
         return self.solutions[index]
@@ -46,10 +47,12 @@ class Solutions:
             print(solution.get_path())
     
 class Solution:
-    def __init__(self, find, end, steps):
+    def __init__(self, find, end, steps, abandoned: tp.List[Node] = []):
         self._find = find
         self._end = end
         self._steps = steps
+        self._abandoned = abandoned
+        self._sneakyMdd = None # there IS none
     
     def find(self):
         return self._find
@@ -64,6 +67,5 @@ class Solution:
     def get_cost(self):
         return self._end.time
 
-
-    
-        
+    def remember_the_past(self):
+        return self._abandoned

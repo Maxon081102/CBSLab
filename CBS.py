@@ -1,6 +1,8 @@
 import math
 import heapq
 import copy
+import typing as tp
+from itertools import combinations
 
 import numpy as np
 import pandas as pd
@@ -19,24 +21,39 @@ from Constraints import Constraints, Constraint_step
 from CBS_Node import CBS_Node
 from CBS_Tree import CBS_tree
 
+from path_to_success import UranaiBaba, Conflict, ConflictType
+
+
+def carefully_extract_the_conflict(points, t, some_vegetables) -> tp.Tuple[Conflict, ConflictType]:
+    beautiful_soup = []
+    for (i, j), pets in points.items():
+        if len(pets) > 1:
+            # all combinations of agents (pets) of 2
+            beautiful_soup += [(*tossed, (i, j), t) for tossed in combinations(pets, 2)]
+
+    baba = UranaiBaba(beautiful_soup, some_vegetables)
+    return baba.please_uranai()
+
+
 def get_first_conflict_from(points):
     for key_conflict in points:
         if len(points[key_conflict]) > 1:
             return key_conflict
+
 
 def print_debug(mode, mes, obj=None):
     if mode:
         print(mes, obj)
 
 
-def CBS(grid_map, starts_points, goals_points, heuristic_func = None, search_tree = None, show_debug=False):
+def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=None, show_debug=False):
     mode = show_debug
     cbs = CBS_tree()
-    
+
     root = CBS_Node(0, Constraints(), Solutions())
     for i in range(len(starts_points)):
-        find, end, steps = astar(
-            grid_map, 
+        find, end, steps, abandoned = astar(
+            grid_map,
             starts_points[i][0],
             starts_points[i][1],
             goals_points[i][0],
@@ -46,38 +63,59 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func = None, search_tre
             heuristic_func,
             search_tree
         )
-        root.get_solutions().add_solution(find, end, steps)
-    
+        root.get_solutions().add_solution(find, end, steps, abandoned)
+
     root.count_cost()
 
     cbs.add_to_open(root)
 
     while cbs.OPEN:
         current_node = cbs.get_best_node_from_open()
+
         print_debug(mode, "NEW OPEN NODE", current_node)
         print_debug(mode, "SOLUTION IN OPEN NODE")
         for solution in current_node.get_solutions().solutions:
             print_debug(mode, "", solution.get_path())
+
         conflict, step = current_node.find_conflict()
-        print_debug(mode, "CONFLICT AND STEP", [conflict, step] )
+        # conflict, step = current_node.what_is_the_second_part_for()
+
+        print_debug(mode, "CONFLICT AND STEP", [conflict, step])
+
         if conflict is None:
             return current_node.get_solutions()
+
+        # granted_conflict_key = get_first_conflict_from(conflict)
+
+        (granted_conflict, kind) = carefully_extract_the_conflict(conflict, step, current_node.get_solutions())
         
-        first_conflict_key = get_first_conflict_from(conflict)
-        print_debug(mode, "FIRST_CONFLICT", conflict[first_conflict_key])
+        # For cardinal: kind == ConflictType.cardinal
+        # For semi-cardinal: kind == ConflictType.semiCardinal
+        #   and in this case you can get the index of agent with cardinal conflict with `kind.cardinalAgent`
+        # For non-cardinal: kind == ConflictType.nonCardinal
+
+        print_debug(mode, "FIRST_CONFLICT", granted_conflict)
         # first_astar_index = conflict[first_conflict_key][0]
         # conflict_node = Node(current_node.get_solutions().solutions[first_astar_index].get_path()[step].i, current_node.get_solutions().solutions[first_astar_index].get_path()[step].j)
-        for agent_index in conflict[first_conflict_key]:
-            new_cbs_node = CBS_Node(current_node.get_cost(), copy.deepcopy(current_node.get_constraints()), copy.deepcopy(current_node.get_solutions()), current_node)
+
+        (a1, a2, _, _) = granted_conflict
+        for agent_index in (a1, a2):
+            new_cbs_node = CBS_Node(current_node.get_cost(), copy.deepcopy(
+                current_node.get_constraints()), copy.deepcopy(current_node.get_solutions()), current_node)
             conflict_node = Node(0, 0)
-            print_debug(mode, step, len(current_node.get_solutions().solutions[agent_index].get_path()))
-            if step >= len(current_node.get_solutions().solutions[agent_index].get_path()):
-                conflict_node = Node(current_node.get_solutions().solutions[agent_index].get_path()[-1].i, current_node.get_solutions().solutions[agent_index].get_path()[-1].j)
+            path = current_node.get_solutions().solutions[agent_index].get_path()
+
+            print_debug(mode, step, len(path))
+
+            if step >= len(path):
+                conflict_node = Node(path[-1].i, path[-1].j)
             else:
-                conflict_node = Node(current_node.get_solutions().solutions[agent_index].get_path()[step].i, current_node.get_solutions().solutions[agent_index].get_path()[step].j)
+                conflict_node = Node(path[step].i, path[step].j)
             new_cbs_node.get_constraints().add_constraint(agent_index, step, conflict_node)
+
             print_debug(mode, "CONSTRAINTS", new_cbs_node.get_constraints())
-            find, end, steps = astar(
+
+            find, end, steps, abandoned = astar(
                 grid_map,
                 starts_points[agent_index][0],
                 starts_points[agent_index][1],
@@ -88,11 +126,13 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func = None, search_tre
                 heuristic_func,
                 search_tree
             )
-            if type(end) == bool:
+            if not find:
                 continue
+
             print_debug(mode, "PATH: ", make_path(end))
-            new_cbs_node.get_solutions().upgrade_solution(agent_index, find, end, steps)
-            
+
+            new_cbs_node.get_solutions().upgrade_solution(agent_index, find, end, steps, abandoned)
+
             new_cbs_node.count_cost()
             if new_cbs_node.get_cost() < math.inf:
                 print_debug(mode, "NEW CBS NODE", new_cbs_node)
@@ -100,9 +140,5 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func = None, search_tre
         # print("ALL OOPEN", cbs.OPEN)
         cbs.add_to_closed(current_node)
         print_debug(mode, "----------------------------")
-                
+
     return None
-
-        
-
-
