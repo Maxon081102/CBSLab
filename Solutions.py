@@ -13,13 +13,14 @@ from heapq import heappop, heappush
 
 from astar import Node
 
+
 def make_path(goal):
     '''
     Creates a path by tracing parent pointers from the goal node to the start node
     It also returns path's length.
     '''
 
-    length = goal.g
+    length = goal.f
     current = goal
     path = []
     while current.parent:
@@ -27,6 +28,7 @@ def make_path(goal):
         current = current.parent
     path.append(current)
     return path[::-1], length
+
 
 class Solutions:
     def __init__(self):
@@ -40,6 +42,12 @@ class Solutions:
     
     def get_solution_of_robot(self, index):
         return self.solutions[index]
+    
+    def __repr__(self) -> str:
+        paths = []
+        for solution in self.solutions:
+            paths.append(solution.get_path())
+        return str(paths)
     
 class Solution:
     def __init__(self, find, end, steps):
@@ -58,8 +66,7 @@ class Solution:
         return self._steps
     
     def get_cost(self):
-        _, len_ = make_path(self._end)
-        return len_
+        return self._end.time
 
 
     

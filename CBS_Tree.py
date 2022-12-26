@@ -10,7 +10,7 @@ class CBS_tree:
     def __init__(self):
         self._open = []
         heapq.heapify(self._open)
-        self._closed = {}
+        self._closed = set()
     
     def open_is_empty(self):
         return len(self._open) == 0
@@ -25,14 +25,10 @@ class CBS_tree:
         return best_node
     
     def add_to_closed(self, item):
-        self._closed[item] = item
+        self._closed.add(item)
 
     def was_expanded(self, item):
-        try:
-            node = self._closed[item]
-            return True
-        except KeyError:
-            return False
+        return item in self._closed
     
     @property
     def OPEN(self):
