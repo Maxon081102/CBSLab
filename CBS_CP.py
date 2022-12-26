@@ -3,8 +3,14 @@ import heapq
 import copy
 from itertools import combinations
 
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 from time import time
+from PIL import Image, ImageDraw
 from heapq import heappop, heappush
 
 from map import Map
@@ -13,9 +19,21 @@ from Solutions import Solution, Solutions, make_path
 from Constraints import Constraints, Constraint_step
 from CBS_Node import CBS_Node
 from CBS_Tree import CBS_tree
-from CBSHMDD import compute_cg_heuristic
 
 from path_to_success import UranaiBaba
+
+
+def carefully_extract_the_conflict(points, some_vegetables):
+    beautiful_soup = []
+    # print(points.items())
+    for (i, j, t), pets in points.items():
+        if len(pets) > 1:
+            # all combinations of agents (pets) of 2
+            beautiful_soup += [(*tossed, (i, j), t)
+                               for tossed in combinations(pets, 2)]
+
+    baba = UranaiBaba(beautiful_soup, some_vegetables)
+    return baba.please_uranai()
 
 
 def get_first_conflict_from(points):
@@ -29,7 +47,7 @@ def print_debug(mode, mes, obj=None):
         print(mes, obj)
 
 
-def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=None, show_debug=False):
+def CBS_CP(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=None, show_debug=False):
     mode = show_debug
     cbs = CBS_tree()
 
@@ -44,7 +62,8 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
             i,
             Constraints(),
             heuristic_func,
-            search_tree
+            search_tree,
+            get_all_path=True
         )
         root.get_solutions().add_solution(find, end, steps, abandoned)
 
@@ -70,13 +89,8 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
             return current_node.get_solutions()
 
         if vertex_conflicts_step >= edge_conflicts_step:
-            granted_conflict_key = get_first_conflict_from(vertex_conflicts)
-            granted_conflict = (
-                vertex_conflicts[granted_conflict_key][0],
-                vertex_conflicts[granted_conflict_key][1],
-                (0, 0),
-                0
-            )
+            granted_conflict = carefully_extract_the_conflict(
+                vertex_conflicts, current_node.get_solutions())
             step = vertex_conflicts_step
         else:
             granted_conflict_key = get_first_conflict_from(edge_conflicts)
@@ -119,7 +133,8 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
                 agent_index,
                 new_cbs_node.get_constraints(),
                 heuristic_func,
-                search_tree
+                search_tree,
+                get_all_path=True
             )
             if not find:
                 continue
@@ -129,7 +144,6 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
             new_cbs_node.get_solutions().upgrade_solution(
                 agent_index, find, end, steps, abandoned)
 
-            # print_debug(True, "H Value = ", new_cbs_node.h)
             new_cbs_node.count_cost()
             if new_cbs_node.get_cost() < math.inf:
                 print_debug(mode, "NEW CBS NODE", new_cbs_node)

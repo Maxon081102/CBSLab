@@ -19,7 +19,6 @@ def make_path(goal):
     Creates a path by tracing parent pointers from the goal node to the start node
     It also returns path's length.
     '''
-
     length = goal.f
     current = goal
     path = []
@@ -27,7 +26,22 @@ def make_path(goal):
         path.append(current)
         current = current.parent
     path.append(current)
-    return path[::-1], length
+    return path[::-1]
+
+def make_all_path(abandoned):
+    paths = []
+    for end in abandoned:
+        length = end.f
+        current = end
+        path = []
+        while current.parent:
+            path.append(current)
+            current = current.parent
+        path.append(current)
+        path = path[::-1]
+        paths.append(path)
+    return paths
+
 
 class Solutions:
     def __init__(self):
@@ -58,8 +72,12 @@ class Solution:
         return self._find
     
     def get_path(self):
-        path, _ = make_path(self._end)
+        path = make_path(self._end)
         return path
+    
+    def get_all_path(self):
+        paths = make_all_path(self._abandoned)
+        return paths
     
     def steps(self):
         return self._steps

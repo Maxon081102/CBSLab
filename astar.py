@@ -150,7 +150,8 @@ def astar(
         agent_index: int,
         constraints: Constraints,
         heuristic_func: tp.Callable,
-        search_tree: tp.Type[SearchTreePQS]):
+        search_tree: tp.Type[SearchTreePQS],
+        get_all_path=False):
     ast = search_tree()
     steps = 0
     found = False
@@ -160,6 +161,8 @@ def astar(
     ast.add_to_open(current_node)
     max_constraint_path = constraints.get_max_step(agent_index)
     while not ast.open_is_empty():
+        if found and not get_all_path:
+            break
         current_node = ast.get_best_node_from_open()
         if current_node is None:
             break
@@ -187,11 +190,19 @@ def astar(
                 new_node.h = heuristic_func(i, j, goal_i, goal_j)
                 new_node.time = current_node.time + 1
                 new_node.f = new_node.time + new_node.h
+                if new_node.i == goal_i and new_node.j == goal_j and new_node.time > max_constraint_path and not get_all_path:
+                    found = True
+                    last = new_node
+                    break
                 ast.add_to_open(new_node)
 
         ast.add_to_closed(current_node)
 
     nobodyRemembersThem = [last]
+
+    if not get_all_path:
+        return found, last, steps, nobodyRemembersThem
+        
     if found:
         while True:
             leftover = ast.get_best_node_from_open()

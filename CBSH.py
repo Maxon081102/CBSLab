@@ -17,7 +17,6 @@ from CBSHMDD import compute_cg_heuristic
 
 from path_to_success import UranaiBaba
 
-
 def get_first_conflict_from(points):
     for key_conflict in points:
         if len(points[key_conflict]) > 1:
@@ -29,7 +28,7 @@ def print_debug(mode, mes, obj=None):
         print(mes, obj)
 
 
-def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=None, show_debug=False):
+def CBSH(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=None, show_debug=False):
     mode = show_debug
     cbs = CBS_tree()
 
@@ -44,7 +43,8 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
             i,
             Constraints(),
             heuristic_func,
-            search_tree
+            search_tree,
+            get_all_path=True
         )
         root.get_solutions().add_solution(find, end, steps, abandoned)
 
@@ -119,7 +119,8 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
                 agent_index,
                 new_cbs_node.get_constraints(),
                 heuristic_func,
-                search_tree
+                search_tree,
+                get_all_path=True
             )
             if not find:
                 continue
@@ -129,6 +130,10 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
             new_cbs_node.get_solutions().upgrade_solution(
                 agent_index, find, end, steps, abandoned)
 
+            all_paths_for_agent = []
+            for i in range(len(starts_points)):
+                all_paths_for_agent.append(new_cbs_node.get_solutions().get_solution_of_robot(i).get_all_path())
+            new_cbs_node.h = compute_cg_heuristic(all_paths_for_agent)
             # print_debug(True, "H Value = ", new_cbs_node.h)
             new_cbs_node.count_cost()
             if new_cbs_node.get_cost() < math.inf:

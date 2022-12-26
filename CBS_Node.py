@@ -26,6 +26,7 @@ class CBS_Node:
 
     def __init__(self, cost, constraints=None, solutions=None, parent = None):
         self._cost = cost
+        self.h = 0
         self._constraints = constraints
         self._solutions = solutions
         self.parent = parent
@@ -34,7 +35,7 @@ class CBS_Node:
         cost = 0
         for solution in self._solutions.solutions:
             cost += solution.get_cost()
-        self._cost = cost
+        self._cost = cost + self.h
     
     def get_cost(self):
         return self._cost
