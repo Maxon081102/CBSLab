@@ -151,7 +151,7 @@ tests = [
     test_on_map_3
 ]
 
-def test_cbs_on_map(number, number_test, isCBSH=False, isCBS_CP=False, show_debug=False, show_all_solution=True, show_path=True, draw_test_map=False):
+def test_cbs_on_map(number, number_test, isCBSH=False, isCBS_CP=False, show_debug=False, show_all_solution=True, show_path=True, draw_test_map=False, show_cost=False):
     test_map = Map()
     test_map.read_from_string(test_maps[number], width, height) 
     starts_points = tests[number][number_test][0]
@@ -167,6 +167,8 @@ def test_cbs_on_map(number, number_test, isCBSH=False, isCBS_CP=False, show_debu
     else:
         sol = CBS(test_map, starts_points, goal_points,
                   octile, SearchTreePQS, show_debug)
+    if show_cost:
+        print("COST: ", sol.get_cost())
     if show_all_solution:
         for i in range(len(starts_points)):
             print(sol.get_solution_of_robot(i).get_path())

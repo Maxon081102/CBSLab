@@ -2,14 +2,7 @@ import math
 import heapq
 import typing as tp
 
-import numpy as np
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-
 from time import time
-from PIL import Image, ImageDraw
 from heapq import heappop, heappush
 
 from astar import Node
@@ -55,6 +48,12 @@ class Solutions:
     
     def get_solution_of_robot(self, index):
         return self.solutions[index]
+    
+    def get_cost(self):
+        cost = 0
+        for solution in self.solutions:
+            cost += solution.get_cost()
+        return cost
     
     def __repr__(self) -> str:
         for solution in self.solutions:

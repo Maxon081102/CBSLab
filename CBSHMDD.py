@@ -1,6 +1,5 @@
 import time as timer
 import os
-import psutil
 import heapq
 import networkx as nx
 

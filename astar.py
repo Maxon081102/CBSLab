@@ -1,13 +1,7 @@
 import math
 
-import numpy as np
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-
 
 from time import time
-from PIL import Image, ImageDraw
 from heapq import heappop, heappush
 
 from map import Map
@@ -22,8 +16,6 @@ def compute_cost(i1: int, j1: int, i2: int, j2: int) -> float:
     '''
     if abs(i1 - i2) + abs(j1 - j2) == 1:  # cardinal move
         return 1
-    elif abs(i1 - i2) == 1 and abs(j1 - j2) == 1:
-        return np.sqrt(2)
     elif i1 == i2 and j1 == j2:
         return 0
     else:
@@ -32,15 +24,7 @@ def compute_cost(i1: int, j1: int, i2: int, j2: int) -> float:
 
 
 def distance(i1: int, j1: int, i2: int, j2: int) -> float:
-    line = max(abs(i1 - i2), abs(j1 - j2)) - min(abs(i1 - i2), abs(j1 - j2))
-    return line + min(abs(i1 - i2), abs(j1 - j2)) * np.sqrt(2)
-
-
-def octile(i1: int, j1: int, i2: int, j2: int) -> float:
-    dx = abs(i2 - i1)
-    dy = abs(j2 - j1)
-    return abs(dx - dy) + np.sqrt(2) * min(dx, dy)
-
+    return abs(i1 - i2) + abs(j1 - j2)
 
 class Node:
     '''

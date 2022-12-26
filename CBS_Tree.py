@@ -1,6 +1,3 @@
-from PIL import Image, ImageDraw
-import numpy as np
-import matplotlib.pyplot as plt
 import math
 import heapq
 from heapq import heappop, heappush

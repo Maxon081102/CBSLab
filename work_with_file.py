@@ -4,10 +4,11 @@ def read_task_from_file(path):
     '''
 
     tasks_file = open(path)
-    tasks_file.readline()
-    height = int(tasks_file.readline().split()[1])
-    width = int(tasks_file.readline().split()[1])
-    tasks_file.readline()
+    # tasks_file.readline()
+    height, width = map(int, tasks_file.readline().split())
+    # height = int(tasks_file.readline().split()[1])
+    # width = int(tasks_file.readline().split()[1])
+    # tasks_file.readline()
     cells = [[0 for _ in range(width)] for _ in range(height)]
     i = 0
     j = 0
@@ -29,8 +30,15 @@ def read_task_from_file(path):
         i += 1
         if(i == height):
             break
+    agent_count = int(tasks_file.readline())
+    starts = []
+    goals = []
+    for agent in range(agent_count):
+        start_i, start_j, goal_i, goal_j = map(int, tasks_file.readline().split())
+        starts.append((start_i, start_j))
+        goals.append((goal_i, goal_j))
     
-    return (width, height, cells)
+    return (width, height, cells, starts, goals)
 
 def read_tasks(file):
     file = file + ".scen"

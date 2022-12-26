@@ -3,14 +3,7 @@ import heapq
 import copy
 from itertools import combinations
 
-import numpy as np
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-
 from time import time
-from PIL import Image, ImageDraw
 from heapq import heappop, heappush
 
 from map import Map
