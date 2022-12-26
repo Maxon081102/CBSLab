@@ -140,12 +140,14 @@ def astar(grid_map, agent, constraints, heuristic_func = None, search_tree = Non
     
     current_point = [agent.start.i, agent.start.j]
     current_node = Node(current_point[0], current_point[1])
+    current_base_node = BaseNode(current_point[0], current_point[1])
     nodes_created += 1
     ast.add_to_open(current_node)
     latest_constraint = constraints.get_latest_constraint(agent)
 
     while not ast.open_is_empty():
         current_node = ast.get_best_node_from_open()
+        current_base_node = BaseNode(current_node.i, current_node.j)
         if ast.was_expanded(current_node):
             break
 
@@ -160,7 +162,7 @@ def astar(grid_map, agent, constraints, heuristic_func = None, search_tree = Non
             )
             new_base_node = BaseNode(new_node.i, new_node.j)
             if not ast.was_expanded(new_node) and\
-                constraints.is_allowed(agent, new_node.time, new_base_node):  
+                constraints.is_allowed(agent, new_node.time, current_base_node, new_base_node):  
                 if new_base_node == agent.goal and new_node.time > latest_constraint:
                     end = new_node
                     found = True

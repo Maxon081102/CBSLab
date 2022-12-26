@@ -7,7 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-from time import time
+from time import time, sleep
 from PIL import Image, ImageDraw, ImageOps
 from IPython.display import display
 from IPython.display import Image as Img
@@ -106,8 +106,7 @@ def draw_dynamic(grid_map, sol, output_filename = 'animated_trajectories'):
                 for j in range(width):
                     if(not grid_map.traversable(i, j)):
                         draw.rectangle((j * m, i * m, (j + 1) * m - 1, (i + 1) * m - 1), fill=( 70, 80, 80 ))
-                   
-            
+                
             #draw agents
             for i, s in enumerate(sol.solutions):
                 path = s.get_path()
@@ -119,14 +118,13 @@ def draw_dynamic(grid_map, sol, output_filename = 'animated_trajectories'):
                 dj = n * (next_node.j - curr_node.j) / quality
 
                 draw.ellipse((float(curr_node.j + dj + 0.2) * m, 
-                              float(curr_node.i + di + 0.2) * m, 
-                              float(curr_node.j + dj + 0.8) * m - 1, 
-                              float(curr_node.i + di + 0.8) * m - 1), 
-                              fill=agent_colors[i], width=0)
+                            float(curr_node.i + di + 0.2) * m, 
+                            float(curr_node.j + dj + 0.8) * m - 1, 
+                            float(curr_node.i + di + 0.8) * m - 1), 
+                            fill=agent_colors[i], width=0)
             
             im = ImageOps.expand(im, border=2, fill='black')
             images.append(im)
         step += 1
-        print("step")
     images[0].save('./'+output_filename+'.png', save_all=True, append_images=images[1:], optimize=False, duration=500/quality, loop=0)
     display(Img(filename = './'+output_filename+'.png'))

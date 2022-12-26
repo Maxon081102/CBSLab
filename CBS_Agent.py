@@ -26,6 +26,9 @@ class BaseNode:
     def __eq__(self, other) -> bool:
         return self.i == other.i and self.j == other.j
 
+    def __lt__(self, other):
+        return self.i < other.i if self.i != other.i else self.j < other.j
+
 
 class Agent:
     def __init__(self, index, start=(0, 0), finish=(0, 0)) -> None:
@@ -36,7 +39,7 @@ class Agent:
     def __eq__(self, other):
         return self.index == other.index
 
-    def __le__(self, other):
+    def __lt__(self, other):
         return self.index < other.index
 
     def __repr__(self):

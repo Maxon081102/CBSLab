@@ -44,62 +44,64 @@ class CBS_Node:
     def get_constraints(self):
         return self._constraints
         
-    def find_conflict(self):
+    def find_vertex_conflict(self):
         paths = [solution.get_path() for solution in self._solutions.solutions]
         max_len = max([len(path) for path in paths])
         for t in range(max_len):
             points = {}
-            there_are_conflict = False
             for agent_index, path in enumerate(paths):
                 if len(path) > t:
                     if (path[t].i, path[t].j) in points:
-                        points[(path[t].i, path[t].j)].append(agent_index)
-                        there_are_conflict = True
+                        return (path[t].i, path[t].j), t, points[(path[t].i, path[t].j)], agent_index
                     else:
-                        points[(path[t].i, path[t].j)] = [agent_index]
+                        points[(path[t].i, path[t].j)] = agent_index
                 else:
                     if (path[-1].i, path[-1].j) in points:
-                        points[(path[-1].i, path[-1].j)].append(agent_index)
-                        there_are_conflict = True
+                        return (path[-1].i, path[-1].j), t, points[(path[-1].i, path[-1].j)], agent_index
                     else:
-                        points[(path[-1].i, path[-1].j)] = [agent_index]
-           
-            if there_are_conflict:
-                return points, t
-            
-        for i in range(1, max_len):
-            points = {}
-            prev_points = set()
-            for j in range(len(paths)):
-                if len(paths[j]) > i - 1:
-                    prev_points.add(paths[j][i - 1])
-            count_paths = 0
-            for j in range(len(paths)):
-                if len(paths[j]) > i:
-                    count_paths += 1
-                    current_point = paths[j][i]
-                    prev_point = paths[j][i - 1]
-                    
-                    if current_point.i < prev_point.i:
-                        current_point, prev_point = prev_point, current_point
-                    elif current_point.i == prev_point.i:
-                        if current_point.j < prev_point.j:
-                            current_point, prev_point = prev_point, current_point
+                        points[(path[-1].i, path[-1].j)] = agent_index
 
-                    if f"{(prev_point.i, prev_point.j)} {(current_point.i, current_point.j)}" in points:
-                        points[f"{(prev_point.i, prev_point.j)} {(current_point.i, current_point.j)}"].append(j)
+        return None, 0, 0, 0
+
+    
+    def find_edge_conflict(self):
+        paths = [solution.get_path() for solution in self._solutions.solutions]
+        max_len = max([len(path) for path in paths])      
+        for t in range(1, max_len):
+            edges = {}
+            for agent_index, path in enumerate(paths):
+                if t < len(path):
+                    if (path[t].i, path[t].j, path[t - 1].i, path[t - 1].j) in edges:
+                        return (
+                            (path[t - 1].i, path[t - 1].j), (path[t].i, path[t].j), 
+                            t - 1, t, agent_index, edges[(path[t].i, path[t].j, path[t - 1].i, path[t - 1].j)]
+                            )
                     else:
-                        points[f"{(prev_point.i, prev_point.j)} {(current_point.i, current_point.j)}"] = [j]
-            if len(points) != count_paths:
-                return points, i
+                        edges[(path[t - 1].i, path[t - 1].j, path[t].i, path[t].j)] = agent_index
 
-        return None, 0
+        return None, None, 0, 0, 0, 0
+
+    def find_conflict(self):
+        vertex, step, agent_1, agent_2 = self.find_vertex_conflict()
+        vertex_1, vertex_2, step_1, step_2, agent_12, agent_21 = self.find_edge_conflict()
+
+        # Can be optized
+        if vertex is None and vertex_1 is None:
+            return None
+        if vertex is None:
+            return (vertex_1, vertex_2, step_1, step_2, agent_12, agent_21)
+        if vertex_1 is None:
+            return (vertex, step, agent_1, agent_2)
+        if step <= step_1:
+            return (vertex, step, agent_1, agent_2)
+        else:
+            return (vertex_1, vertex_2, step_1, step_2, agent_12, agent_21)
     
     def __hash__(self):
         '''
         To implement CLOSED as set of nodes we need Node to be hashable.
         '''
-        return hash((self._cost, self._constraints))
+        return hash(self._constraints)
 
     def __lt__(self, other): 
         '''
