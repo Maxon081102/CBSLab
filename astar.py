@@ -12,7 +12,9 @@ from PIL import Image, ImageDraw
 from heapq import heappop, heappush
 
 from map import Map
-from Constraints import Constraint_step
+from Constraints import Constraints
+from CBS_Agent import BaseNode, Agent
+
 
 def compute_cost(i1, j1, i2, j2):
     '''
@@ -31,6 +33,7 @@ def distance(i1, j1, i2, j2):
     line = max(abs(i1 - i2), abs(j1 - j2)) - min(abs(i1 - i2), abs(j1 - j2))
     return line + min(abs(i1 - i2), abs(j1 - j2)) * np.sqrt(2)
 
+
 class Node:
     '''
     Node class represents a search node
@@ -43,10 +46,10 @@ class Node:
 
     '''
     
-
     def __init__(self, i, j, g = 0, h = 0, f = None, parent = None, tie_breaking_func = None):
         self.i = i
         self.j = j
+        self.node = BaseNode(i, j)
         self.g = g
         self.h = h
         self.time = 0
@@ -54,10 +57,6 @@ class Node:
         if parent is not None:
             self.time = parent.time + 1
             self.f = self.time + h
-        # if f is None:
-        #     self.f = self.g + h
-        # else:
-        #     self.f = f        
         self.parent = parent
 
         
@@ -96,9 +95,7 @@ class SearchTreePQS: #SearchTree which uses PriorityQueue for OPEN and set for C
     
     def __init__(self):
         self._open = []
-        heapq.heapify(self._open)
-        self._closed = {}      # list for the expanded nodes = CLOSED
-        self._enc_open_dublicates = 0
+        self._closed = set()      # list for the expanded nodes = CLOSED
         
     def __len__(self):
         return len(self._open) + len(self._closed)
@@ -110,7 +107,6 @@ class SearchTreePQS: #SearchTree which uses PriorityQueue for OPEN and set for C
     def open_is_empty(self):
         return len(self._open) == 0
     
-    
     def add_to_open(self, item):
         heapq.heappush(self._open, item)
     
@@ -121,14 +117,10 @@ class SearchTreePQS: #SearchTree which uses PriorityQueue for OPEN and set for C
         return best_node
         
     def add_to_closed(self, item):
-        self._closed[item] = item
+        self._closed.add(item)
 
     def was_expanded(self, item):
-        try:
-            node = self._closed[item]
-            return True
-        except KeyError:
-            return False
+        return item in self._closed
 
     @property
     def OPEN(self):
@@ -138,59 +130,43 @@ class SearchTreePQS: #SearchTree which uses PriorityQueue for OPEN and set for C
     def CLOSED(self):
         return self._closed
 
-    @property
-    def number_of_open_dublicates(self):
-        return self._enc_open_dublicates
 
-def astar(grid_map, start_i, start_j, goal_i, goal_j, agent_index, constraints, heuristic_func = None, search_tree = None):
+def astar(grid_map, agent, constraints, heuristic_func = None, search_tree = None):
     ast = search_tree()
     steps = 0
     nodes_created = 0
+    found = False
     CLOSED = None
     
-    current_point = [start_i, start_j]
+    current_point = [agent.start.i, agent.start.j]
     current_node = Node(current_point[0], current_point[1])
     nodes_created += 1
     ast.add_to_open(current_node)
-    open_is_empty = False
-    max_constraint_path = constraints.get_max_step(agent_index)
-    while not open_is_empty:
+    latest_constraint = constraints.get_latest_constraint(agent)
+
+    while not ast.open_is_empty():
+        current_node = ast.get_best_node_from_open()
+        if ast.was_expanded(current_node):
+            break
+
         steps += 1
-        # current_node = ast.get_best_node_from_open()
         ast.add_to_closed(current_node)
         neighbors = grid_map.get_neighbors(current_node.i, current_node.j)
-        # print("NEIGHBORS ", neighbors)
         for point in neighbors:
             nodes_created += 1
-            new_node = Node(point[0], point[1],g=current_node.g + compute_cost(point[0], point[1], current_node.i, current_node.j) ,h=heuristic_func(goal_i, goal_j, point[0], point[1]),parent= current_node)
-            in_contraints = False
-            # print("NEW NODE TIME", new_node.time)
-            for node in constraints.get_constraints(agent_index, new_node.time):
-                if node.i == new_node.i and node.j == new_node.j:
-                    in_contraints = True
-                    break
-            if ast.was_expanded(new_node) or in_contraints:
-                # print("PASS")
-                pass
-            else:
-                if new_node.i == goal_i and new_node.j == goal_j and new_node.time > max_constraint_path:
+            new_node = Node(
+                point[0], point[1], g=current_node.g + compute_cost(point[0], point[1], current_node.i, current_node.j), 
+                h=heuristic_func(agent.goal.i, agent.goal.j, point[0], point[1]), parent=current_node
+            )
+            new_base_node = BaseNode(new_node.i, new_node.j)
+            if not ast.was_expanded(new_node) and\
+                constraints.is_allowed(agent, new_node.time, new_base_node):  
+                if new_base_node == agent.goal and new_node.time > latest_constraint:
                     end = new_node
-                    find = True
-                    return find, end, steps
+                    found = True
+                    return found, end, steps
                 ast.add_to_open(new_node)
-        # print("OPEN ", ast.OPEN)
-        if ast.open_is_empty():
-            open_is_empty = True
-            continue
-        current_node = ast.get_best_node_from_open()
-        # print("get_best_node_from_open ", current_node)
-        if ast.was_expanded(current_node):
-            # print("BREAK")
-            break
         
-    
-    # print(current_node)
     CLOSED = ast.CLOSED
-    return False, False, steps
-    # return False, best_node, steps
+    return found, None, steps
 

@@ -22,9 +22,8 @@ class CBS_Node:
     - parent: pointer to the parent-node 
 
     '''
-    
 
-    def __init__(self, cost, constraints=None, solutions=None, parent = None):
+    def __init__(self, cost=0, constraints=None, solutions=None, parent = None):
         self._cost = cost
         self._constraints = constraints
         self._solutions = solutions
@@ -47,28 +46,26 @@ class CBS_Node:
         
     def find_conflict(self):
         paths = [solution.get_path() for solution in self._solutions.solutions]
-        # print(paths)
         max_len = max([len(path) for path in paths])
-        for i in range(max_len):
+        for t in range(max_len):
             points = {}
             there_are_conflict = False
-            for j in range(len(paths)):
-                if len(paths[j]) > i:
-                    if (paths[j][i].i, paths[j][i].j) in points:
-                        points[(paths[j][i].i, paths[j][i].j)].append(j)
+            for agent_index, path in enumerate(paths):
+                if len(path) > t:
+                    if (path[t].i, path[t].j) in points:
+                        points[(path[t].i, path[t].j)].append(agent_index)
                         there_are_conflict = True
                     else:
-                        points[(paths[j][i].i, paths[j][i].j)] = [j]
+                        points[(path[t].i, path[t].j)] = [agent_index]
                 else:
-                    if (paths[j][-1].i, paths[j][-1].j) in points:
-                        points[(paths[j][-1].i, paths[j][-1].j)].append(j)
+                    if (path[-1].i, path[-1].j) in points:
+                        points[(path[-1].i, path[-1].j)].append(agent_index)
                         there_are_conflict = True
                     else:
-                        points[(paths[j][-1].i, paths[j][-1].j)] = [j]
-
-                    
+                        points[(path[-1].i, path[-1].j)] = [agent_index]
+           
             if there_are_conflict:
-                return points, i
+                return points, t
             
         for i in range(1, max_len):
             points = {}
@@ -94,7 +91,6 @@ class CBS_Node:
                     else:
                         points[f"{(prev_point.i, prev_point.j)} {(current_point.i, current_point.j)}"] = [j]
             if len(points) != count_paths:
-                # print("RETURN CONFLICT ", points, i)
                 return points, i
 
         return None, 0
@@ -103,9 +99,7 @@ class CBS_Node:
         '''
         To implement CLOSED as set of nodes we need Node to be hashable.
         '''
-        s = f"{self._cost} {self._constraints.__hash__()}"
-        return hash(s)
-
+        return hash((self._cost, self._constraints))
 
     def __lt__(self, other): 
         '''
@@ -117,4 +111,4 @@ class CBS_Node:
         return self._cost < other._cost
     
     def __repr__(self) -> str:
-        return f"{self._constraints} {self._cost}"
+        return f"CONSTRAINTS: {self._constraints}; COST: {self._cost}"

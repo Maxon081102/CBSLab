@@ -13,6 +13,7 @@ from heapq import heappop, heappush
 
 from astar import Node
 
+
 def make_path(goal):
     '''
     Creates a path by tracing parent pointers from the goal node to the start node
@@ -28,6 +29,7 @@ def make_path(goal):
     path.append(current)
     return path[::-1], length
 
+
 class Solutions:
     def __init__(self):
         self.solutions = []
@@ -42,8 +44,10 @@ class Solutions:
         return self.solutions[index]
     
     def __repr__(self) -> str:
+        paths = []
         for solution in self.solutions:
-            print(solution.get_path())
+            paths.append(solution.get_path())
+        return str(paths)
     
 class Solution:
     def __init__(self, find, end, steps):

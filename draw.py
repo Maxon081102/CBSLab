@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 
 
 from time import time
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
+from IPython.display import display
+from IPython.display import Image as Img
 from heapq import heappop, heappush
 
 def draw(grid_map, start = None, goal = None, path = None, nodes_opened = None, nodes_expanded = None, nodes_reexpanded = None, pt = False):
@@ -77,3 +79,54 @@ def draw(grid_map, start = None, goal = None, path = None, nodes_opened = None, 
     plt.show()
 
 
+def draw_dynamic(grid_map, sol, output_filename = 'animated_trajectories'):
+    m = 30
+    quality = 6
+    
+    k = len(sol.solutions)
+    max_len = 0
+    for s in sol.solutions:
+        max_len = max(max_len, len(s.get_path()))
+    
+    height, width = grid_map.get_size()
+    h_im = height * m
+    w_im = width * m
+    
+    step = 0
+    images = []
+    agent_colors = [(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)) for _ in range(k)]
+              
+    while step < max_len:
+        for n in range(0, quality):
+            im = Image.new('RGB', (w_im, h_im), color = 'white')
+            draw = ImageDraw.Draw(im)
+            
+            # draw static obstacles
+            for i in range(height):
+                for j in range(width):
+                    if(not grid_map.traversable(i, j)):
+                        draw.rectangle((j * m, i * m, (j + 1) * m - 1, (i + 1) * m - 1), fill=( 70, 80, 80 ))
+                   
+            
+            #draw agents
+            for i, s in enumerate(sol.solutions):
+                path = s.get_path()
+                pathlen = len(path)
+                curr_node = path[min(pathlen - 1, step)]
+                next_node = path[min(pathlen - 1, step + min(n, 1))]
+
+                di = n * (next_node.i - curr_node.i) / quality
+                dj = n * (next_node.j - curr_node.j) / quality
+
+                draw.ellipse((float(curr_node.j + dj + 0.2) * m, 
+                              float(curr_node.i + di + 0.2) * m, 
+                              float(curr_node.j + dj + 0.8) * m - 1, 
+                              float(curr_node.i + di + 0.8) * m - 1), 
+                              fill=agent_colors[i], width=0)
+            
+            im = ImageOps.expand(im, border=2, fill='black')
+            images.append(im)
+        step += 1
+        print("step")
+    images[0].save('./'+output_filename+'.png', save_all=True, append_images=images[1:], optimize=False, duration=500/quality, loop=0)
+    display(Img(filename = './'+output_filename+'.png'))
