@@ -22,8 +22,7 @@ def compute_cost(i1: int, j1: int, i2: int, j2: int) -> float:
         raise Exception(
             'Trying to compute the cost of non-supported move! ONLY cardinal moves are supported.')
 
-
-def distance(i1: int, j1: int, i2: int, j2: int) -> float:
+def distance(i1: int, j1: int, i2: int, j2: int) -> int:
     return abs(i1 - i2) + abs(j1 - j2)
 
 class Node:
@@ -43,16 +42,12 @@ class Node:
         self.j = j
         self.g = g
         self.h = h
+        self.f = g + h
         self.time = 0
-        self.f = 0
+        self.parent = parent
         if parent is not None:
             self.time = parent.time + 1
             self.f = self.time + h
-        # if f is None:
-        #     self.f = self.g + h
-        # else:
-        #     self.f = f
-        self.parent = parent
 
     def __eq__(self, other):
         '''
@@ -65,8 +60,8 @@ class Node:
         '''
         To implement CLOSED as set of nodes we need Node to be hashable.
         '''
-        ijt = self.i, self.j, self.time
-        return hash(ijt)
+        ij = self.i, self.j
+        return hash((ij, self.time))
 
     def __lt__(self, other):
         '''
@@ -157,8 +152,6 @@ def astar(
                 found = True
                 last = current_node
                 break
-            # else: # what
-                # pass
 
         for (i, j) in grid_map.get_neighbors(current_node.i, current_node.j):
             new_node = Node(i, j, parent=current_node)
@@ -175,9 +168,7 @@ def astar(
                 new_node.time = current_node.time + 1
                 new_node.f = new_node.time + new_node.h
                 if new_node.i == goal_i and new_node.j == goal_j and new_node.time > max_constraint_path and not get_all_path:
-                    found = True
-                    last = new_node
-                    break
+                    return True, new_node, steps, [new_node]
                 ast.add_to_open(new_node)
 
         ast.add_to_closed(current_node)

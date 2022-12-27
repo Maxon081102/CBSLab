@@ -1,19 +1,50 @@
-import math
-import heapq
-
-from time import time
-from heapq import heappop, heappush
+import numpy as np
 
 class Map:
 
-    def __init__(self, manhattan=False):
+    def __init__(self):
         '''
-        Default constructor
+        Default constructr
+
+        don't ask
         '''
-        self.manhattan = manhattan
         self._width = 0
         self._height = 0
         self._cells = []
+
+    def convert_back(self) -> str:
+        res = ""
+        for i in range(self._height):
+            for j in range(self._width):
+                res += "@" if self._cells[i][j] == 1 else "."
+            res += '\n'
+        file = open("test.txt", "w")
+        file.write(res)
+        file.close()
+        return res
+
+
+    def read_from_map(self, filename: str):
+        '''
+        Read the map file and load it
+
+        :param filename: name of the file
+        '''
+        with open(filename) as file:
+            lines = file.readlines()
+
+        self._height = int(lines[1].split()[1])
+        self._width = int(lines[2].split()[1])
+        self._cells = np.zeros((self._height, self._width), dtype=int)
+
+        assert len(lines[4:]) == self._height, 'height of the map should match given height'
+
+        for i, line in enumerate(lines[4:]):
+            assert len(line.strip()) == self._width, 'width of each row should match given width'
+            for j, c in enumerate(line.strip()):
+                if c not in ('.', 'T', '@'):
+                    print("some werid")
+                self._cells[i][j] = (0 if c == '.' else 1)
     
 
     def read_from_string(self, cell_str, width, height):

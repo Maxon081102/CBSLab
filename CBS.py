@@ -32,6 +32,7 @@ def print_debug(mode, mes, obj=None):
 def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=None, show_debug=False):
     mode = show_debug
     cbs = CBS_tree()
+    nodes_touched = 0
 
     root = CBS_Node(0, Constraints(), Solutions())
     for i in range(len(starts_points)):
@@ -51,6 +52,7 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
     root.count_cost()
 
     cbs.add_to_open(root)
+    nodes_touched += 1
 
     while cbs.OPEN:
         current_node = cbs.get_best_node_from_open()
@@ -67,7 +69,7 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
         # print_debug(mode, "CONFLICT AND STEP", [conflict, step])
 
         if vertex_conflicts is None and edge_conflicts is None:
-            return current_node.get_solutions()
+            return current_node.get_solutions(), nodes_touched
 
         if vertex_conflicts_step >= edge_conflicts_step:
             granted_conflict_key = get_first_conflict_from(vertex_conflicts)
@@ -94,6 +96,7 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
 
         (a1, a2, _, _) = granted_conflict
         for agent_index in (a1, a2):
+            nodes_touched += 1
             new_cbs_node = CBS_Node(current_node.get_cost(), copy.deepcopy(
                 current_node.get_constraints()), copy.deepcopy(current_node.get_solutions()), current_node)
             conflict_node = Node(0, 0)
@@ -121,8 +124,7 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
                 heuristic_func,
                 search_tree
             )
-            if not find:
-                continue
+            if not find: continue
 
             print_debug(mode, "PATH: ", make_path(end))
 
@@ -138,4 +140,4 @@ def CBS(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=
         cbs.add_to_closed(current_node)
         print_debug(mode, "----------------------------")
 
-    return None
+    return None, nodes_touched

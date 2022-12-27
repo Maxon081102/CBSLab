@@ -43,6 +43,7 @@ def print_debug(mode, mes, obj=None):
 def CBS_CP(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=None, show_debug=False):
     mode = show_debug
     cbs = CBS_tree()
+    nodes_touched = 0
 
     root = CBS_Node(0, Constraints(), Solutions())
     for i in range(len(starts_points)):
@@ -63,6 +64,7 @@ def CBS_CP(grid_map, starts_points, goals_points, heuristic_func=None, search_tr
     root.count_cost()
 
     cbs.add_to_open(root)
+    nodes_touched += 1
 
     while cbs.OPEN:
         current_node = cbs.get_best_node_from_open()
@@ -73,19 +75,16 @@ def CBS_CP(grid_map, starts_points, goals_points, heuristic_func=None, search_tr
             print_debug(mode, "", solution.get_path())
 
         # conflict, step = current_node.find_conflict()
-        vertex_conflicts, vertex_conflicts_step = current_node.find_vertex_conflicts()
-        edge_conflicts, edge_conflicts_step = current_node.find_edge_conflicts()
         step = 0
-        # print_debug(mode, "CONFLICT AND STEP", [conflict, step])
-
-        if vertex_conflicts is None and edge_conflicts is None:
-            return current_node.get_solutions()
-
-        if vertex_conflicts_step >= edge_conflicts_step:
-            granted_conflict = carefully_extract_the_conflict(
-                vertex_conflicts, current_node.get_solutions())
+        vertex_conflicts, vertex_conflicts_step = current_node.find_vertex_conflicts()
+        if vertex_conflicts is not None:
+            granted_conflict = carefully_extract_the_conflict(vertex_conflicts, current_node.get_solutions())
             step = vertex_conflicts_step
         else:
+            edge_conflicts, edge_conflicts_step = current_node.find_edge_conflicts()
+            if edge_conflicts is None:
+               return current_node.get_solutions(), nodes_touched 
+
             granted_conflict_key = get_first_conflict_from(edge_conflicts)
             granted_conflict = (
                 edge_conflicts[granted_conflict_key][0],
@@ -94,6 +93,7 @@ def CBS_CP(grid_map, starts_points, goals_points, heuristic_func=None, search_tr
                 0
             )
             step = edge_conflicts_step
+        # print_debug(mode, "CONFLICT AND STEP", [conflict, step])
 
         print_debug(mode, "FIRST_CONFLICT", granted_conflict)
         # first_astar_index = conflict[first_conflict_key][0]
@@ -101,6 +101,7 @@ def CBS_CP(grid_map, starts_points, goals_points, heuristic_func=None, search_tr
 
         (a1, a2, _, _) = granted_conflict
         for agent_index in (a1, a2):
+            nodes_touched += 1
             new_cbs_node = CBS_Node(current_node.get_cost(), copy.deepcopy(
                 current_node.get_constraints()), copy.deepcopy(current_node.get_solutions()), current_node)
             conflict_node = Node(0, 0)
@@ -129,8 +130,7 @@ def CBS_CP(grid_map, starts_points, goals_points, heuristic_func=None, search_tr
                 search_tree,
                 get_all_path=True
             )
-            if not find:
-                continue
+            if not find: continue
 
             print_debug(mode, "PATH: ", make_path(end))
 
@@ -145,4 +145,4 @@ def CBS_CP(grid_map, starts_points, goals_points, heuristic_func=None, search_tr
         cbs.add_to_closed(current_node)
         print_debug(mode, "----------------------------")
 
-    return None
+    return None, nodes_touched

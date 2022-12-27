@@ -39,11 +39,14 @@ def make_all_path(abandoned):
 class Solutions:
     def __init__(self):
         self.solutions = []
+        self.totalSteps = 0
     
     def add_solution(self, find, end, steps, abandoned: tp.List[Node] = []):
+        self.totalSteps += steps
         self.solutions.append(Solution(find, end, steps, abandoned))
     
     def upgrade_solution(self, index, find, end, steps, abandoned: tp.List[Node] = []):
+        self.totalSteps += steps
         self.solutions[index] = Solution(find, end, steps, abandoned)
     
     def get_solution_of_robot(self, index):

@@ -5,22 +5,17 @@ from dataclasses import dataclass
 from astar import Node
 
 
-@dataclass
-class Layer:
-    time: int
-    width: int # amount of nodes on the current layer
-
 class MDD:
     def __init__(self, nodes: tp.List[Node]) -> None:
         assert nodes  # nodes is not empty
-        self.cost: int = nodes[0].g
-        self.layers: tp.List[Layer] = [None] * (self.cost + 1) # type: ignore
+        self.cost: int = nodes[0].time
+        self.layers: tp.List[int] = [0] * (self.cost + 1) # type: ignore
 
         unique = {nodes[0]: nodes[0]} # now all nodes are equal so only add one
         currentLayerNodes = nodes
         nextLayerNodes: tp.List[Node] = []
         for i in range(self.cost, -1, -1):
-            self.layers[i] = Layer(i, len(unique))
+            self.layers[i] = len(unique)
             unique.clear()
             nextLayerNodes.clear()
             for node in currentLayerNodes:
@@ -38,13 +33,12 @@ class MDD:
     def tell_me_how_many_nodes_are_on_level(self, level: int) -> int:
         if level > self.cost:
             return 1
-        res = self.layers[level].width
-        return res
+        return self.layers[level]
     
     def __repr__(self) -> str:
         res = ""
-        for layer in self.layers:
-            res += str(layer.time) + ": " + str(layer.width) + "\n"
+        for i, layer in enumerate(self.layers):
+            res += str(i) + ": " + str(layer) + "\n"
         return res
             
 
