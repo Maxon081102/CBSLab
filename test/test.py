@@ -92,19 +92,19 @@ def do_not_look_in_this_function(q, algorithm: Algorithm, map, ss, gs):
     q.put((result, explored, time.process_time() - t0))
     # q.put((result, explored, t))
 
-def tryToTraverseHomogeniusSpace():
+def tryToTraverseHomogeniusSpace(beholding: str):
     try:
-        return pd.read_csv(CACHE_FILE + ".csv")
+        return pd.read_csv(beholding + ".csv")
     except FileNotFoundError as spaceTimeCollapse:
         return None
 
-def enterTheHomogeniusSpace(withA: pd.DataFrame):
-    withA.to_csv(CACHE_FILE + ".csv")
+def enterTheHomogeniusSpace(withA: pd.DataFrame, into: str):
+    withA.to_csv(into + ".csv")
 
 
 def perform_super_precise_tests(map: Map, dataFrames: Tests, algorithms: tp.List[Algorithm], beLazyAboutIt=True):
     if beLazyAboutIt:
-        quiteAResult = tryToTraverseHomogeniusSpace()
+        quiteAResult = tryToTraverseHomogeniusSpace(map.name)
         if quiteAResult is not None:
             return quiteAResult
 
@@ -158,5 +158,5 @@ def perform_super_precise_tests(map: Map, dataFrames: Tests, algorithms: tp.List
 
     aResult = pd.DataFrame(listOfRows)
     if beLazyAboutIt:
-        enterTheHomogeniusSpace(aResult)
+        enterTheHomogeniusSpace(aResult, map.name)
     return aResult

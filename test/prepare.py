@@ -24,6 +24,7 @@ def gimmemymaps() -> tp.Dict[str, Map]:
     gimme = {}
     for name in maps:
         m = Map()
+        m.name = name
         m.read_from_map("data/" + name + ".map")
         gimme[name] = m
     return gimme

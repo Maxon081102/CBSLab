@@ -11,6 +11,7 @@ class Map:
         self._width = 0
         self._height = 0
         self._cells = []
+        self.name = ""
 
     def convert_back(self) -> str:
         res = ""
