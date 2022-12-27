@@ -13,9 +13,9 @@ from PIL import Image, ImageDraw
 from heapq import heappop, heappush
 
 from map import Map
-from astar import astar, Node
-from Solutions import Solution, Solutions, make_path
-from Constraints import Constraints, Constraint_step
+from CBS_DS.astar import astar, Node
+from CBS_DS.Solutions import Solution, Solutions, make_path
+from CBS_DS.Constraints import Constraints, Constraint_step
 from CBS_Node import CBS_Node
 from CBS_Tree import CBS_tree
 

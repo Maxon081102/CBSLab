@@ -1,3 +1,11 @@
+import os
+import sys
+import time
+
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
+
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,9 +17,9 @@ from IPython.display import Image as Img
 
 from map import Map
 from draw import draw, draw_dynamic
-from CBS_DS import CBS_DS
-from Solutions import make_path
-from astar import Node, distance, SearchTreePQS
+from CBS_DS.CBS_DS import CBS_DS
+from CBS_DS.Solutions import make_path
+from CBS_DS.astar import Node, distance, SearchTreePQS
 
 
 def manhattan(x1, y1, x2, y2):
@@ -75,10 +83,29 @@ test_map_str_3 = '''
 # # # # # . . . . . . . . # # . . . . . . . . . . . . . . .
 '''
 
+test_map_str_4 = '''
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . # # # # # # . # # # # # # . # # # # # # . . . . .
+. . . . . # # # # # # . # # # # # # . # # # # # # . . . . .
+. . . . . # # # # # # . # # # # # # . # # # # # # . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . # # # # # # . # # # # # # . # # # # # # . . . . .
+. . . . . # # # # # # . # # # # # # . # # # # # # . . . . .
+. . . . . # # # # # # . # # # # # # . # # # # # # . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . # # # # # # . # # # # # # . # # # # # # . . . . .
+. . . . . # # # # # # . # # # # # # . # # # # # # . . . . .
+. . . . . # # # # # # . # # # # # # . # # # # # # . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+'''
+
 test_maps = [
     test_map_str_1, 
     test_map_str_2,
-    test_map_str_3
+    test_map_str_3,
+    test_map_str_4
 ]
 
 test_map_1 = Map()
@@ -156,10 +183,18 @@ test_on_map_3 = [
     ]
 ]
 
+test_on_map_4 = [
+    [
+        [[5, 11], [5, 18], [9, 11], [9, 18], [5, 5], [5, 24]],
+        [[9, 18], [9, 11], [5, 18], [5, 11], [9, 24], [9, 5]]
+    ]
+]
+
 tests = [
     test_on_map_1,
     test_on_map_2,
-    test_on_map_3
+    test_on_map_3,
+    test_on_map_4
 ]
 
 def test_cbs_on_map(number, number_test, show_debug=False, show_all_solution=True, show_path=True):

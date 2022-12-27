@@ -14,13 +14,13 @@ def read_task_from_file(path):
 
     for l in tasks_file:
         j = 0
-        for c in l:
+        for c in l.strip():
             if c == '.':
                 cells[i][j] = 0
-            elif c == '@':
-                cells[i][j] = 1
-            else:
+            elif c == ' ':
                 continue
+            else:
+                cells[i][j] = 1
             j += 1
             
         if j != width:
