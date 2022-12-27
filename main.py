@@ -1,4 +1,6 @@
-from CBS import CBS
+from CBS.CBS import CBS
+from CBS.CBSH import CBSH
+from CBS.CBS_CP import CBS_CP
 from CBS_DS.CBS_DS import CBS_DS
 from CBS_Tree import CBS_tree
 from CBS_DS.astar import distance
