@@ -13,7 +13,7 @@ from CBSH import CBSH
 from CBS import CBS
 from CBS_CP import CBS_CP
 from Solutions import make_path
-from astar import Node, distance, SearchTreePQS, octile
+from astar import Node, distance, SearchTreePQS
 
 height = 15
 width = 30
@@ -160,13 +160,13 @@ def test_cbs_on_map(number, number_test, isCBSH=False, isCBS_CP=False, show_debu
         draw(test_map)
     sol = None
     if isCBSH:
-        sol = CBSH(test_map, starts_points, goal_points, octile, SearchTreePQS, show_debug)
+        sol = CBSH(test_map, starts_points, goal_points, distance, SearchTreePQS, show_debug)
     elif isCBS_CP:
         sol = CBS_CP(test_map, starts_points, goal_points,
-                  octile, SearchTreePQS, show_debug)
+                  distance, SearchTreePQS, show_debug)
     else:
         sol = CBS(test_map, starts_points, goal_points,
-                  octile, SearchTreePQS, show_debug)
+                  distance, SearchTreePQS, show_debug)
     if show_cost:
         print("COST: ", sol.get_cost())
     if show_all_solution:
