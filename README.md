@@ -36,6 +36,7 @@ agent_1_start_point_i agent_1_start_point_j agent_1_goal_point_i agent_1_goal_po
 
 
 ## Примеры
+![exampl1GIF](https://user-images.githubusercontent.com/64801664/209651497-2a384794-68d3-4890-ad7e-23846e97f20e.gif)
 
 ### Источники
 
