@@ -1,3 +1,11 @@
+import os
+import sys
+import time
+
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
+
 import math
 import heapq
 
@@ -42,6 +50,9 @@ class Solutions:
     
     def get_solution_of_robot(self, index):
         return self.solutions[index]
+
+    def get_cost(self):
+        return np.sum([sol.get_cost() for sol in self.solutions])
     
     def __repr__(self) -> str:
         paths = []
