@@ -8,7 +8,7 @@ from time import time
 from heapq import heappop, heappush
 
 from map import Map
-from astar import astar, Node
+from astar import astar, Node, SearchTreePQS
 from Solutions import Solution, Solutions, make_path
 from Constraints import Constraints, Constraint_step
 from CBS_Node import CBS_Node
@@ -28,7 +28,7 @@ def print_debug(mode, mes, obj=None):
         print(mes, obj)
 
 
-def CBSH(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=None, show_debug=False):
+def CBSH(grid_map, starts_points, goals_points, heuristic_func=None, search_tree=None, show_debug=False, astar_search_tree=SearchTreePQS):
     mode = show_debug
     cbs = CBS_tree()
 
@@ -43,18 +43,18 @@ def CBSH(grid_map, starts_points, goals_points, heuristic_func=None, search_tree
             i,
             Constraints(),
             heuristic_func,
-            search_tree,
+            astar_search_tree,
             get_all_path=True
         )
         root.get_solutions().add_solution(find, end, steps, abandoned)
 
     root.count_cost()
 
-    # for i in range(len(starts_points)):
-    #     print(root.get_solutions(
-    #     ).get_solution_of_robot(i).get_all_path())
-    #     print(len(root.get_solutions(
-    #     ).get_solution_of_robot(i).get_all_path()))
+    for i in range(len(starts_points)):
+        print(root.get_solutions(
+        ).get_solution_of_robot(i).get_all_path())
+        print(len(root.get_solutions(
+        ).get_solution_of_robot(i).get_all_path()))
 
     cbs.add_to_open(root)
 
@@ -125,7 +125,7 @@ def CBSH(grid_map, starts_points, goals_points, heuristic_func=None, search_tree
                 agent_index,
                 new_cbs_node.get_constraints(),
                 heuristic_func,
-                search_tree,
+                astar_search_tree,
                 get_all_path=True
             )
             if not find:
@@ -138,8 +138,8 @@ def CBSH(grid_map, starts_points, goals_points, heuristic_func=None, search_tree
 
             all_paths_for_agent = []
             for i in range(len(starts_points)):
-                # print(new_cbs_node.get_solutions(
-                # ).get_solution_of_robot(i).get_all_path())
+                print(new_cbs_node.get_solutions(
+                ).get_solution_of_robot(i).get_all_path())
                 all_paths_for_agent.append(new_cbs_node.get_solutions().get_solution_of_robot(i).get_all_path())
             new_cbs_node.h = compute_cg_heuristic(all_paths_for_agent)
             print_debug(True, "H Value = ", new_cbs_node.h)

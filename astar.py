@@ -45,6 +45,7 @@ class Node:
         self.h = h
         self.time = 0
         self.f = 0
+        self.remember = hash(parent)
         if parent is not None:
             self.time = parent.time + 1
             self.f = self.time + h
@@ -59,13 +60,15 @@ class Node:
         Estimating where the two search nodes are the same,
         which is needed to detect dublicates in the search tree.
         '''
+        if self.parent is not None and other.parent is not None:
+            return self.parent == other.parent and self.i == other.i and self.j == other.j and self.time == other.time
         return self.i == other.i and self.j == other.j and self.time == other.time
 
     def __hash__(self):
         '''
         To implement CLOSED as set of nodes we need Node to be hashable.
         '''
-        ijt = self.i, self.j, self.time, self.parent.__hash__()
+        ijt = self.i, self.j, self.time, self.remember
         return hash(ijt)
 
     def __lt__(self, other):
@@ -76,10 +79,11 @@ class Node:
         This comparator is very basic. We will code a more plausible comparator further on.
         '''
         if self.f == other.f:
-            return self.time <= other.time
+            return self.time < other.time
         return self.f < other.f
 
     def __repr__(self) -> str:
+        # return f"{self.i} {self.j} t={self.time} f={self.f} g={self.g}"
         return f"{self.i} {self.j} t={self.time} f={self.f}"
 
 
@@ -103,9 +107,13 @@ class SearchTreePQS:  # SearchTree which uses PriorityQueue for OPEN and set for
     def add_to_open(self, item):
         heappush(self._open, item)
 
-    def get_best_node_from_open(self):
+    def get_best_node_from_open(self, debug=False):
         while self._open:
             item = heappop(self._open)
+
+            if debug:
+                print(f"pop item {item}")
+
             if not self.was_expanded(item):
                 return item
         return None
@@ -148,7 +156,7 @@ def astar(
         if found and not get_all_path:
             break
         current_node = ast.get_best_node_from_open()
-        # print("BEST NODE: ", current_node)
+        print("BEST NODE: ", current_node)
         if current_node is None:
             break
 
@@ -167,6 +175,7 @@ def astar(
             if not in_contraints and not ast.was_expanded(new_node):
                 new_node.g = current_node.g + \
                     compute_cost(current_node.i, current_node.j, i, j)
+                # print(new_node.g)
                 new_node.h = heuristic_func(i, j, goal_i, goal_j)
                 new_node.time = current_node.time + 1
                 new_node.f = new_node.time + new_node.h
@@ -180,11 +189,11 @@ def astar(
             if current_node.time > max_constraint_path:
                 found = True
                 last = current_node
-                # print("LAST OPEN: ", ast.OPEN)
+                print("LAST OPEN: ", ast.OPEN)
                 break
         
         ast.add_to_closed(current_node)
-        # print("END OPEN: ", ast.OPEN)
+        print("END OPEN: ", ast.OPEN)
 
 
     nobodyRemembersThem = [last]
@@ -194,12 +203,12 @@ def astar(
         
     if found:
         while True:
-            leftover = ast.get_best_node_from_open()
+            leftover = ast.get_best_node_from_open(debug=True)
             # print("leftover: ", leftover)
-            if last != leftover: break
+            if last.f != leftover.f and last.i != leftover.i and last.j != leftover.j: break
             assert last.f == leftover.f
             nobodyRemembersThem.append(leftover)
 
-    # print("nobodyRemembersThem: ", nobodyRemembersThem)
-    # print("OPEN: ", ast.OPEN)
+    print("nobodyRemembersThem: ", nobodyRemembersThem)
+    print("OPEN: ", ast.OPEN)
     return found, last, steps, nobodyRemembersThem
