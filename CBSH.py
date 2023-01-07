@@ -50,6 +50,12 @@ def CBSH(grid_map, starts_points, goals_points, heuristic_func=None, search_tree
 
     root.count_cost()
 
+    # for i in range(len(starts_points)):
+    #     print(root.get_solutions(
+    #     ).get_solution_of_robot(i).get_all_path())
+    #     print(len(root.get_solutions(
+    #     ).get_solution_of_robot(i).get_all_path()))
+
     cbs.add_to_open(root)
 
     while cbs.OPEN:
@@ -108,7 +114,7 @@ def CBSH(grid_map, starts_points, goals_points, heuristic_func=None, search_tree
                 conflict_node = Node(path[step].i, path[step].j)
             new_cbs_node.get_constraints().add_constraint(agent_index, step, conflict_node)
 
-            print_debug(mode, "CONSTRAINTS", new_cbs_node.get_constraints())
+            print_debug(True, "CONSTRAINTS", new_cbs_node.get_constraints())
 
             find, end, steps, abandoned = astar(
                 grid_map,
@@ -132,15 +138,17 @@ def CBSH(grid_map, starts_points, goals_points, heuristic_func=None, search_tree
 
             all_paths_for_agent = []
             for i in range(len(starts_points)):
+                # print(new_cbs_node.get_solutions(
+                # ).get_solution_of_robot(i).get_all_path())
                 all_paths_for_agent.append(new_cbs_node.get_solutions().get_solution_of_robot(i).get_all_path())
             new_cbs_node.h = compute_cg_heuristic(all_paths_for_agent)
-            # print_debug(True, "H Value = ", new_cbs_node.h)
+            print_debug(True, "H Value = ", new_cbs_node.h)
             new_cbs_node.count_cost()
             if new_cbs_node.get_cost() < math.inf:
-                print_debug(mode, "NEW CBS NODE", new_cbs_node)
+                print_debug(True, "NEW CBS NODE", new_cbs_node)
                 cbs.add_to_open(new_cbs_node)
         # print("ALL OOPEN", cbs.OPEN)
         cbs.add_to_closed(current_node)
-        print_debug(mode, "----------------------------")
+        print_debug(True, "----------------------------")
 
     return None

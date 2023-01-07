@@ -24,6 +24,7 @@ def make_path(goal):
 def make_all_path(abandoned):
     paths = []
     for end in abandoned:
+        # print(end)
         length = end.f
         current = end
         path = []

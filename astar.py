@@ -65,7 +65,7 @@ class Node:
         '''
         To implement CLOSED as set of nodes we need Node to be hashable.
         '''
-        ijt = self.i, self.j, self.time
+        ijt = self.i, self.j, self.time, self.parent.__hash__()
         return hash(ijt)
 
     def __lt__(self, other):
@@ -76,11 +76,11 @@ class Node:
         This comparator is very basic. We will code a more plausible comparator further on.
         '''
         if self.f == other.f:
-            return self.g < other.g
+            return self.time <= other.time
         return self.f < other.f
 
     def __repr__(self) -> str:
-        return f"{self.i} {self.j} {self.time}"
+        return f"{self.i} {self.j} t={self.time} f={self.f}"
 
 
 class SearchTreePQS:  # SearchTree which uses PriorityQueue for OPEN and set for CLOSED
@@ -148,15 +148,11 @@ def astar(
         if found and not get_all_path:
             break
         current_node = ast.get_best_node_from_open()
+        # print("BEST NODE: ", current_node)
         if current_node is None:
             break
 
         steps += 1
-        if current_node.i == goal_i and current_node.j == goal_j:
-            if current_node.time > max_constraint_path:
-                found = True
-                last = current_node
-                break
             # else: # what
                 # pass
 
@@ -180,7 +176,16 @@ def astar(
                     break
                 ast.add_to_open(new_node)
 
+        if current_node.i == goal_i and current_node.j == goal_j:
+            if current_node.time > max_constraint_path:
+                found = True
+                last = current_node
+                # print("LAST OPEN: ", ast.OPEN)
+                break
+        
         ast.add_to_closed(current_node)
+        # print("END OPEN: ", ast.OPEN)
+
 
     nobodyRemembersThem = [last]
 
@@ -190,8 +195,11 @@ def astar(
     if found:
         while True:
             leftover = ast.get_best_node_from_open()
+            # print("leftover: ", leftover)
             if last != leftover: break
             assert last.f == leftover.f
             nobodyRemembersThem.append(leftover)
 
+    # print("nobodyRemembersThem: ", nobodyRemembersThem)
+    # print("OPEN: ", ast.OPEN)
     return found, last, steps, nobodyRemembersThem
